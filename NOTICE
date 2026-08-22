@@ -1,12 +1,44 @@
 PharmCast
 Copyright 2026 Eidogen-Sertanty, Inc.
 
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
 This product includes software developed at Eidogen-Sertanty, Inc.
+
+--------------------------------------------------------------------------
+TRADEMARKS
+--------------------------------------------------------------------------
 
 PharmCast, PharmPrint, PolyPharmPrint, PharmSim and ChIP are trademarks of
 Eidogen-Sertanty, Inc. The Apache License grants no rights in these marks; see
 section 6 of the License. Forks and derivative works must not use them as the
 name of the derived work.
 
-The model weights distributed alongside this software are NOT covered by the
-Apache License. See LICENSE-WEIGHTS.md.
+--------------------------------------------------------------------------
+TRAINING DATA ATTRIBUTION
+--------------------------------------------------------------------------
+
+The released model weights are covered by the same Apache License as the code.
+No training corpus is redistributed by this project. The corpora the model was
+trained on are acknowledged here:
+
+Protein Data Bank
+  Loop peptide conformations were derived from structures in the RCSB Protein
+  Data Bank. PDB data are released to the public domain (CC0 1.0). We thank the
+  depositors of the individual entries.
+  H.M. Berman et al. The Protein Data Bank. Nucleic Acids Research (2000).
+
+ChEMBL (PharmCast SCP and later)
+  Large-molecule training and evaluation data were derived from ChEMBL, made
+  available by the European Bioinformatics Institute under the Creative Commons
+  Attribution-ShareAlike 3.0 Unported licence (CC BY-SA 3.0).
+  https://creativecommons.org/licenses/by-sa/3.0/
+  Zdrazil, B. et al. The ChEMBL Database in 2023. Nucleic Acids Research (2024).
+
+Enamine
+  Screening collection structures were supplied by Enamine Ltd under their
+  catalogue terms. https://enamine.net
+
+Attribution to these sources is required when redistributing the weights and is
+satisfied by keeping this NOTICE file intact, as the Apache License already
+requires.

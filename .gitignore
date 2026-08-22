@@ -11,7 +11,7 @@ venv/
 # Model weights are large and are attached to releases, not committed.
 *.pt
 
-# Corpus data is never committed. See LICENSE-WEIGHTS.md.
+# Corpus data is never committed — only the trained parameters are released.
 *.pfp
 *.pfp.gz
 *.sdf

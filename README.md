@@ -2,8 +2,7 @@
 
 **Predict a complete 3D pharmacophore fingerprint directly from a 2D structure.**
 
-[![License](https://img.shields.io/badge/code-Apache--2.0-blue.svg)](LICENSE)
-[![Weights](https://img.shields.io/badge/weights-separate%20licence-orange.svg)](LICENSE-WEIGHTS.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Site](https://img.shields.io/badge/site-pharmcast.ai-8a5a2b.svg)](https://pharmcast.ai)
 
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
@@ -46,8 +45,9 @@ pip install pharmcast          # once published
 pip install -e .
 ```
 
-Requires Python ≥ 3.9, `numpy`, `torch` and `rdkit`. Model weights are
-distributed separately — see [LICENSE-WEIGHTS.md](LICENSE-WEIGHTS.md).
+Requires Python ≥ 3.9, `numpy`, `torch` and `rdkit`. Model weights are attached
+to [releases](https://github.com/smuskal/pharmcast/releases) rather than
+committed, and carry the same Apache-2.0 licence as the code.
 
 ## Quick start
 
@@ -184,13 +184,18 @@ handful.
 This repository ships the model and the utilities for using it. It does **not**
 ship the reference pharmacophore fingerprint generator (`pfpall` / `pfprigid`)
 or any of the fingerprint-generating toolchain, and it does not redistribute any
-training corpus. See [LICENSE-WEIGHTS.md](LICENSE-WEIGHTS.md).
+training corpus.
 
 ## Licence
 
-**Code: [Apache-2.0](LICENSE).** **Weights: [separate and not yet
-settled](LICENSE-WEIGHTS.md)** — they are trained on catalogue data whose
-redistribution terms must be confirmed first.
+**[Apache-2.0](LICENSE)** — code and model weights alike. Use it commercially,
+fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
+
+`NOTICE` credits the sources the model was trained on: the RCSB Protein Data
+Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No
+training corpus is redistributed here — only the trained parameters — and
+keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
+attribution those sources ask for.
 
 ## Citation
 
