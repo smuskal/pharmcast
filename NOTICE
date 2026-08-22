@@ -1,0 +1,12 @@
+PharmCast
+Copyright 2026 Eidogen-Sertanty, Inc.
+
+This product includes software developed at Eidogen-Sertanty, Inc.
+
+PharmCast, PharmPrint, PolyPharmPrint, PharmSim and ChIP are trademarks of
+Eidogen-Sertanty, Inc. The Apache License grants no rights in these marks; see
+section 6 of the License. Forks and derivative works must not use them as the
+name of the derived work.
+
+The model weights distributed alongside this software are NOT covered by the
+Apache License. See LICENSE-WEIGHTS.md.

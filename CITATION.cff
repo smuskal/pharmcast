@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use PharmCast, please cite the preprint below and the two PharmPrint papers it builds on."
+title: "PharmCast: predicting three-dimensional pharmacophore fingerprints from two-dimensional structure"
+authors:
+  - family-names: Muskal
+    given-names: Steven M.
+    affiliation: "Eidogen-Sertanty, Inc."
+  - family-names: McGregor
+    given-names: Malcolm J.
+    # affiliation: TO BE CONFIRMED
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/smuskal/pharmcast"
+url: "https://pharmcast.ai"
+preferred-citation:
+  type: article
+  title: "PharmCast: predicting three-dimensional pharmacophore fingerprints from two-dimensional structure"
+  authors:
+    - family-names: Muskal
+      given-names: Steven M.
+    - family-names: McGregor
+      given-names: Malcolm J.
+  year: 2026
+  notes: "Preprint in preparation. DOI to be added on posting."
+references:
+  - type: article
+    title: "Pharmacophore fingerprinting. 1. Application to QSAR and focused library design"
+    authors:
+      - family-names: McGregor
+        given-names: Malcolm J.
+      - family-names: Muskal
+        given-names: Steven M.
+    journal: "Journal of Chemical Information and Computer Sciences"
+    year: 1999
+  - type: article
+    title: "Pharmacophore fingerprinting. 2. Application to primary library design"
+    authors:
+      - family-names: McGregor
+        given-names: Malcolm J.
+      - family-names: Muskal
+        given-names: Steven M.
+    journal: "Journal of Chemical Information and Computer Sciences"
+    year: 2000

@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+
+# Model weights are large and are attached to releases, not committed.
+*.pt
+
+# Corpus data is never committed. See LICENSE-WEIGHTS.md.
+*.pfp
+*.pfp.gz
+*.sdf
+*.smi
+!examples/*.smi
