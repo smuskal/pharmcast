@@ -217,31 +217,15 @@ across every release so versions stay comparable.
 | Large compounds, above 600 Da | 0.065 | 0.72 | 71% |
 | *The real calculation against itself* | *0.006* | *0.995* | *ceiling* |
 
-### What v5 changed, by population
+### Interim numbers, not a trend
 
 The letters name the corpora, not the version: **S**creening collection,
 **C**hEMBL, **P**eptides.
 
-| Population | SP v4 | SCP v5 |
-|---|---:|---:|
-| Validation agreement, median MCC | 0.895 | 0.895 |
-| Catalogue chemistry, median error | 0.018 | 0.019 |
-| Catalogue chemistry, Pearson *r* | 0.967 | 0.968 |
-| Loop peptides, within 0.05 | 78% | **82%** |
-| Large ChEMBL >600 Da, median error | 0.073 | **0.065** |
-| Large ChEMBL >600 Da, within 0.05 | 35% | **40%** |
-| Large ChEMBL >600 Da, Pearson *r* | 0.63 | **0.72** |
-
-The gain is concentrated where v4 was weakest, and the headline validation figure
-stays flat at 0.895 **because that validation set is catalogue-only and cannot
-see an improvement above 600 Da.** Read a model by population, not by one number.
-
-Between v2 and v4 a 51% larger corpus bought a real gain where the model was
-already strong and essentially nothing where it is weakest. That is not a failure
-of scale but a statement about which data was added: **scaling a library that
-stops at 600 Da cannot extend competence past 600 Da, however much of it is
-added.** v5 is the first release to carry non-peptidic catalogue chemistry above
-that line at all.
+These figures come from a corpus that is **roughly half built** and still
+changing in composition. They describe this checkpoint and nothing more.
+Conclusions about what the data buys wait until the corpora are complete and the
+fully trained model exists.
 
 That last row sets the scale. Rebuilding the same molecules with a different
 embedding seed reproduces pair similarity to 0.006 at *r* 0.995, which is the reference
@@ -277,24 +261,38 @@ A model card that hides its failure mode is worse than no model card.
 
 **PharmCast-SP v4** (2026-08-21):
 
-| Corpus | Molecules | Share | Mass range |
-|---|---:|---:|---|
-| Screening collection | 2,511,440 | 96.69% | 142-598 Da, median 344 |
-| Loop peptides, ensemble enhanced | 86,039 | 3.31% | 116-988 Da, median 576 |
-| **Total** | **2,597,479** | 100% | |
+| Corpus | Fingerprinted today | Expected total | Complete |
+|---|---:|---:|---:|
+| Screening collection | 2,955,423 | 4,619,276 | 64% |
+| ChEMBL | 142,482 | 1,412,742 † | 10% |
+| Loop peptides | 108,786 | 132,878 | 82% |
+| **All three** | **3,206,691** | **6,164,896** | **52%** |
 
-**PharmCast-SCP 22aug2026**, which adds a third corpus:
+**The finished training set is expected to be about 6.2 million molecules**, and
+roughly half of it is fingerprinted today. Every molecule is fingerprinted with
+the real 100-conformer calculation, which is what makes the corpus slow to build
+and worth building.
 
-| Corpus | Molecules | Share | Mass range |
-|---|---:|---:|---|
-| Screening collection | 2,702,332 | 96.19% | 142-598 Da, median 344 |
-| Loop peptides, ensemble enhanced | 97,039 | 3.45% | 116-988 Da, median 576 |
-| Large ChEMBL, activity-backed | 9,909 | 0.35% | 600-1000 Da, ascending build |
-| **Total** | **2,809,280** | 100% | |
+† **ChEMBL is the only projected figure.** The screening collection and the
+peptide corpus are enumerated sets whose totals are known, with only the
+fingerprinting left to do. ChEMBL selection is still running, so its expected
+total is an estimate and will move.
 
-Every model is validated on the **same 9,975 held-out screening collection
-molecules**, reserved by `TEST_CHUNKS = 20`, so versions are directly
-comparable.
+SCP v5 trained on a 2,888,503-molecule snapshot of these three corpora as they
+stood on 23 August 2026.
+
+### Why the versions exist
+
+All three corpora are still being fingerprinted and a model is trained
+periodically as they grow; **v6 is in progress.** Each release is a snapshot, not
+a conclusion.
+
+The validation split has never moved — the same 9,975 molecules since v2 — so
+every model is measured on identical ground. That is what will make it possible
+to *estimate the performance of the finished model from these partial ones*, and
+to see whether the curve is still climbing or has converged, before the corpora
+are complete. Every release is published beside its predecessors and never
+replaces one.
 
 Naming: **S** is the screening collection, **C** is ChEMBL, **P** is peptides.
 There is no peptide-only model, and "composite" means SP rather than a third
