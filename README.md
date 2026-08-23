@@ -41,8 +41,8 @@ not what a 2D fingerprint measures.
 
 *The same pharmacophore on two unrelated scaffolds. Estradiol (above) and
 diethylstilbestrol (below) each present an acceptor (p1), a donor (p2) and an
-aromatic ring (p3). The distances differ — 2.7, 7.8 and 10.4 Å against 2.7, 9.2
-and 11.9 — but all three fall in the same bins, so both set the same bit. That is
+aromatic ring (p3). The distances differ, 2.7, 7.8 and 10.4 Å against 2.7, 9.2
+and 11.9, but all three fall in the same bins, so both set the same bit. That is
 what scaffold hopping looks like from inside the descriptor.*
 
 ## How it works
@@ -260,8 +260,8 @@ can beat.
 ![The same pairs coloured by 2D Morgan similarity, with correlation essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
 
 *The same pairs coloured by two dimensional Morgan similarity. Agreement does not
-depend on 2D similarity — r = 0.958 for the most 2D-dissimilar pairs against
-0.972 for the least — so the model is predicting three dimensional feature
+depend on 2D similarity: r = 0.958 for the most 2D-dissimilar pairs against
+0.972 for the least, so the model is predicting three dimensional feature
 geometry rather than restating its own input.*
 
 ## Applicability domain: read this before trusting a score
@@ -318,7 +318,7 @@ All three corpora are still being fingerprinted and a model is trained
 periodically as they grow; **v6 is in progress.** Each release is a snapshot, not
 a conclusion.
 
-The validation split has never moved — the same 9,975 molecules since v2 — so
+The validation split has never moved, the same 9,975 molecules since v2, so
 every model is measured on identical ground. That is what will make it possible
 to *estimate the performance of the finished model from these partial ones*, and
 to see whether the curve is still climbing or has converged, before the corpora
