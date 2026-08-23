@@ -45,13 +45,13 @@ pip install git+https://github.com/smuskal/pharmcast.git
 pip install -e .
 ```
 
-Python ≥ 3.9 with `numpy`, `torch` and `rdkit`. **CPU only** — an
+Python ≥ 3.9 with `numpy`, `torch` and `rdkit`. **CPU only**: an
 8-million-parameter network gains nothing from a GPU, so there is no CUDA build
 to match and no accelerator to configure.
 
 Runs unmodified on **Apple Silicon, Intel macOS, Windows and Linux** (x86_64 and
 aarch64). The package is pure Python: no compiled extension, no architecture
-build step, and nothing that assumes a byte order — word packing uses an explicit
+build step, and nothing that assumes a byte order. Word packing uses an explicit
 little-endian dtype so a fingerprint means the same thing on every machine.
 NumPy 2.x is used when present and 1.x falls back to a lookup table, so a stack
 pinned to NumPy 1.x is not forced to upgrade.
@@ -64,7 +64,7 @@ checksummed, from **<https://pharmcast.ai/models>**.
 | Model | Endpoint | SHA-256 |
 |---|---|---|
 | PharmCast SP v4 | [`/models/pharmcast_sp_v4.pt`](https://pharmcast.ai/models/pharmcast_sp_v4.pt) | `d1f9c735…dc4f9252` |
-| *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | — |
+| *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 ```bash
 curl -O https://pharmcast.ai/models/pharmcast_sp_v4.pt
