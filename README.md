@@ -26,14 +26,32 @@ measured distances. Enumerate every combination of feature type and distance
 range and you have a fixed vocabulary of triangles; each one is a bit, and a
 molecule sets the bit for every triangle it can form.
 
-![A three-point pharmacophore and the enumeration that turns it into one bit](assets/pharmacophore-triplet.png)
+![A three point pharmacophore is three typed features and the three binned distances between them; enumerating every triangle satisfying the triangle inequality gives 10,549 distinct pharmacophores](assets/pharmacophore-bit.jpg)
+
+*What one bit is. Enumerating every triangle that satisfies the triangle
+inequality on the bin bounds gives 10,549 distinct pharmacophores, stored as 330
+unsigned 32-bit words.*
 
 Because the vocabulary is geometric rather than substructural, two molecules
 with nothing in common on paper score highly if they present their features in
 the same places. That is exactly the comparison a scaffold hop needs, and it is
 not what a 2D fingerprint measures.
 
-![The same typed triangle located in two unrelated three-dimensional structures](assets/pharmacophore-3d.png)
+![Estradiol and diethylstilbestrol, each presenting an acceptor, a donor and an aromatic ring at distances that fall in the same three bins](assets/scaffold-hop.jpg)
+
+*The same pharmacophore on two unrelated scaffolds. Estradiol (above) and
+diethylstilbestrol (below) each present an acceptor (p1), a donor (p2) and an
+aromatic ring (p3). The distances differ — 2.7, 7.8 and 10.4 Å against 2.7, 9.2
+and 11.9 — but all three fall in the same bins, so both set the same bit. That is
+what scaffold hopping looks like from inside the descriptor.*
+
+## How it works
+
+![Two molecules through 2D features, the network, the predicted fingerprint against the real one, and the resulting similarity](assets/how-it-works.jpg)
+
+*The conventional route generates a conformer ensemble and runs the reference
+calculation over it. PharmCast predicts the same ensemble record from the two
+dimensional structure and skips the ensemble entirely.*
 
 ---
 
@@ -208,7 +226,11 @@ It loads no model, because the fingerprints are already in the file.
 Measured on molecules the model has never seen, on a validation set held fixed
 across every release so versions stay comparable.
 
-![PharmCast similarity against the real calculation across three chemistries](assets/three-chemistries.png)
+![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
+
+*Predicted against real pairwise similarity on held-out molecules, by population,
+for PharmCast SP v4. The dashed line is exact agreement. Catalogue chemistry and
+loop peptides sit tight to it; large ChEMBL compounds do not.*
 
 | Regime | Median error | Correlation *r* | Pairwise ranking |
 |---|---:|---:|---:|
@@ -233,7 +255,14 @@ agrees with itself an order of magnitude more tightly than PharmCast agrees with
 it. **The ground truth is not the problem**, and 0.006 is the floor no surrogate
 can beat.
 
-![30,000 pairs: surrogate similarity against real similarity](assets/surrogate-vs-real.png)
+### It is not re-deriving 2D similarity
+
+![The same pairs coloured by 2D Morgan similarity, with correlation essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
+
+*The same pairs coloured by two dimensional Morgan similarity. Agreement does not
+depend on 2D similarity — r = 0.958 for the most 2D-dissimilar pairs against
+0.972 for the least — so the model is predicting three dimensional feature
+geometry rather than restating its own input.*
 
 ## Applicability domain: read this before trusting a score
 
@@ -267,6 +296,8 @@ A model card that hides its failure mode is worse than no model card.
 | ChEMBL | 142,482 | 1,412,742 † | 10% |
 | Loop peptides | 108,786 | 132,878 | 82% |
 | **All three** | **3,206,691** | **6,164,896** | **52%** |
+
+![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 64%, ChEMBL 10%, loop peptides 82%, all three 52%](assets/corpus-progress.jpg)
 
 **The finished training set is expected to be about 6.2 million molecules**, and
 roughly half of it is fingerprinted today. Every molecule is fingerprinted with
@@ -320,7 +351,11 @@ together every observed crystal conformation along with 100 computed conformers.
 Repeats are kept rather than deduplicated: how often a loop is observed in a
 given shape is signal about how it occupies space.
 
-![One loop sequence, seven deposited conformations, and the similarity between them](assets/loop-ensembles.png)
+![One loop sequence in several deposited conformations, with the similarity between them](assets/loop-ensembles.jpg)
+
+*One loop sequence, several deposited conformations, and the similarity between
+them. The median Tanimoto between two crystal conformations of the same sequence
+is 0.878, which is what the ensemble record is built to capture.*
 
 ---
 
