@@ -18,8 +18,19 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
+# numpy>=1.24: np.bitwise_count needs 2.0, but similarity.py falls back to a
+# lookup table on 1.x rather than forcing an upgrade on users whose stack is
+# pinned by some other dependency. torch is CPU-only here -- the model is 8 M
+# parameters and a GPU buys nothing.
 dependencies = ["numpy>=1.24", "torch>=2.0", "rdkit>=2023.3"]
 
 [project.optional-dependencies]
@@ -32,6 +43,7 @@ Source = "https://github.com/smuskal/pharmcast"
 
 [project.scripts]
 pharmcast = "pharmcast.cli:main"
+pfp2bits = "pharmcast.cli:pfp2bits_main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -8,7 +8,7 @@
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
 features a molecule can present, so two compounds from completely different
 scaffolds can be compared on the thing a protein actually reads. Its cost has
-never been the fingerprint — of the **2.48 s** needed to fingerprint one
+never been the fingerprint. Of the **2.48 s** needed to fingerprint one
 catalogue molecule over 100 conformers, **2.44 s is conformer generation** and
 only 0.043 s is the fingerprint itself.
 
@@ -40,63 +40,165 @@ not what a 2D fingerprint measures.
 ## Install
 
 ```bash
-pip install pharmcast          # once published
+pip install git+https://github.com/smuskal/pharmcast.git
 # or, from a clone:
 pip install -e .
 ```
 
-Requires Python ≥ 3.9, `numpy`, `torch` and `rdkit`. Model weights are attached
-to [releases](https://github.com/smuskal/pharmcast/releases) rather than
-committed, and carry the same Apache-2.0 licence as the code.
+Python ≥ 3.9 with `numpy`, `torch` and `rdkit`. **CPU only** — an
+8-million-parameter network gains nothing from a GPU, so there is no CUDA build
+to match and no accelerator to configure.
+
+Runs unmodified on **Apple Silicon, Intel macOS, Windows and Linux** (x86_64 and
+aarch64). The package is pure Python: no compiled extension, no architecture
+build step, and nothing that assumes a byte order — word packing uses an explicit
+little-endian dtype so a fingerprint means the same thing on every machine.
+NumPy 2.x is used when present and 1.x falls back to a lookup table, so a stack
+pinned to NumPy 1.x is not forced to upgrade.
+
+## Get the weights
+
+**The weights are not in this repository.** They are served, versioned and
+checksummed, from **<https://pharmcast.ai/models>**.
+
+| Model | Endpoint | SHA-256 |
+|---|---|---|
+| PharmCast SP v4 | [`/models/pharmcast_sp_v4.pt`](https://pharmcast.ai/models/pharmcast_sp_v4.pt) | `d1f9c735…dc4f9252` |
+| *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | — |
+
+```bash
+curl -O https://pharmcast.ai/models/pharmcast_sp_v4.pt
+curl -O https://pharmcast.ai/models/SHA256SUMS
+shasum -a 256 -c SHA256SUMS                      # macOS / Linux
+certutil -hashfile pharmcast_sp_v4.pt SHA256     # Windows
+```
+
+**A published checkpoint is never replaced in place.** A new release is added
+beside the old ones and `SHA256SUMS` is append-only, so a script pinned to a URL
+keeps returning the same bytes. The weights carry the same Apache-2.0 licence as
+the code.
 
 ## Quick start
 
-```python
-from pharmcast import PharmCast, pharmtan, pharmsim
-
-pc = PharmCast.load("PharmCastSP.21August2026.pt")
-
-# words_batch IS THE API THAT MATTERS. The model earns its speed in a batch;
-# a single call is dominated by featurisation overhead.
-a, b = pc.words_batch(["CC(=O)Oc1ccccc1C(=O)O", "CN1C=NC2=C1C(=O)N(C)C(=O)N2C"])
-
-pharmtan(a, b)      # 0.0957 — the PharmSim coefficient
-pharmsim(a, b)      # ...with the shared and exclusive bit sets shown
-```
-
-Each fingerprint is **330 unsigned 32-bit words** in the *native* format — the
-same words the reference calculation emits, in the same bit convention — so
-existing PharmSim tooling consumes PharmCast output unchanged.
-
-### Screening a collection
-
-```python
-from pharmcast import pharmtan_matrix, read_pfp
-
-library = [w for _, w in read_pfp("library.pfp")]
-query   = pc.words_batch(["c1ccc2c(c1)nc(n2)N1CCNCC1"])
-scores  = pharmtan_matrix(query, library)[0]     # vectorised popcount
-```
-
-### Looking at the bits
-
-```python
-from pharmcast import to_bitstring, set_bits, popcount, native_index
-
-popcount(a)                    # 87 bits set of 10,549
-set_bits(a)[:5]                # the positions that are on
-to_bitstring(a, width=80)      # '01010001001011000001011011011011...'
-native_index(set_bits(a))      # ...renumbered into pfpall's own ordering
-```
-
-## Command line
+Everything below is the command line. Install, download a model, run.
 
 ```bash
-pharmcast --model M.pt fp   --in library.smi --out library.pfp
-pharmcast --model M.pt sim  "CCO" "c1ccccc1O"
-pharmcast --model M.pt bits "CC(=O)Oc1ccccc1C(=O)O" --format positions
-pharmcast --model M.pt card                    # what the checkpoint says of itself
+pip install -e .
+# model weights are attached to releases, not committed
+curl -LO https://github.com/smuskal/pharmcast/releases/latest/download/PharmCastSP.pt
 ```
+
+Then fingerprint a file of SMILES:
+
+```bash
+pharmcast --model PharmCastSP.pt fp --in examples/data/molecules.smi --out molecules.pfp
+```
+
+Compare two molecules:
+
+```bash
+pharmcast --model PharmCastSP.pt sim \
+  "C[C@]12CC[C@H]3[C@H](CCc4cc(O)ccc34)[C@@H]1CC[C@@H]2O" \
+  'CC/C(=C(/CC)c1ccc(O)cc1)c1ccc(O)cc1'
+```
+
+See the bits:
+
+```bash
+pharmcast --model PharmCastSP.pt bits "CC(=O)Nc1ccc(O)cc1" --width 120
+pfp2bits molecules.pfp --format positions
+```
+
+And ask the model what it is:
+
+```bash
+pharmcast --model PharmCastSP.pt card
+```
+
+## Worked examples
+
+`examples/` holds runnable scripts and the data they use. Each takes a model
+path and prints its own output; nothing needs editing first.
+
+```bash
+cd examples
+./01_fingerprint.sh  /path/to/PharmCastSP.pt   # SMILES file -> native .pfp
+./02_similarity.sh   /path/to/PharmCastSP.pt   # 3D vs 2D similarity, three pairs
+./03_bits.sh         /path/to/PharmCastSP.pt   # fingerprints -> ones and zeros
+./04_model_card.sh   /path/to/PharmCastSP.pt   # corpus and applicability domain
+```
+
+`02_similarity.sh` is the one to run first. It scores three pairs **both ways**,
+by pharmacophore and by ordinary 2D similarity, because the pharmacophore score
+alone does not tell you anything:
+
+```
+                                      3D (PharmCast)   2D (Morgan)
+  estradiol / diethylstilbestrol      pharmacophore 0.5062   2D 0.163
+  aspirin / salicylate                pharmacophore 0.4775   2D 0.448
+  caffeine / ibuprofen                pharmacophore 0.0000   2D 0.087
+```
+
+Estradiol and diethylstilbestrol are unrelated in 2D and bind the same receptor.
+That gap between the columns is the scaffold hop, and it is the whole reason to
+compute a pharmacophore fingerprint. Aspirin and salicylate score similarly in
+3D but are obviously related in 2D already, so nothing was discovered. Caffeine
+and ibuprofen are unrelated both ways.
+
+## Command line reference
+
+```bash
+pharmcast --model M.pt fp       --in library.smi --out library.pfp
+pharmcast --model M.pt sim      "SMILES_A" "SMILES_B"
+pharmcast --model M.pt bits     "SMILES" [--format binary|positions|words] [--width N]
+pharmcast --model M.pt card
+pharmcast --model M.pt pfp2bits FILE.pfp
+
+pfp2bits FILE.pfp                              # standalone, no model needed
+pfp2bits FILE.pfp --format positions --json
+```
+
+`fp` is the one that matters for throughput: it batches, and PharmCast earns its
+speed in a batch rather than one molecule at a time.
+
+Each fingerprint is **330 unsigned 32-bit words** in the *native* format, the
+same words the reference calculation emits, in the same bit convention, so
+existing PharmSim tooling consumes PharmCast output unchanged.
+
+### Writing and reading `.pfp` files
+
+`pharmcast fp` writes the native `.pfp` layout, the same one the reference
+comparison tools read:
+
+```
+name  <330 unsigned 32-bit ints>  version  MW  heavy  bits  rotb  nconf  X A D H N P R
+```
+
+Everything a 2D structure can supply is filled in, so a `.pfp` written by
+PharmCast is self-describing rather than an anonymous block of integers:
+
+```
+ethanol      ... v1.6  46.1   3   3  0  100 ...
+phenol       ... v1.6  94.1   7  22  0  100 ...
+paracetamol  ... v1.6 151.2  11  43  1  100 ...
+```
+
+`version` is the format version, `MW` the molecular weight, `heavy` the
+heavy-atom count, `bits` the number of pharmacophores set, `rotb` the rotatable
+bonds and `nconf` the conformer count the fingerprint represents. The seven
+per-feature-type counts (`X A D H N P R`) require the reference tool's own atom
+typing and are written as `0`; no comparison tool reads them, and writing a
+number derived from different typing would be worse than writing none.
+
+`pfp2bits` turns any of that back into something a human can look at:
+
+```
+$ pfp2bits library.pfp --width 120
+>paracetamol  set=43/10549  version=v1.6  mw=151.2  heavy=11  bits=43  rotb=1  nconf=100
+000000000000001000010001010001110000000000000000000000000100000000101100011100000000000000000000110000000000000000000001
+```
+
+It loads no model, because the fingerprints are already in the file.
 
 ---
 
@@ -110,26 +212,26 @@ across every release so versions stay comparable.
 | Regime | Median error | Correlation *r* | Pairwise ranking |
 |---|---:|---:|---:|
 | Catalogue chemistry | 0.02 | 0.97 | 92% |
-| Loop peptides | 0.02 | 0.97 | — |
+| Loop peptides | 0.02 | 0.97 | not measured |
 | Large compounds, above 600 Da | 0.07 | 0.63 | 71% |
 | *The real calculation against itself* | *0.006* | *0.995* | *ceiling* |
 
 That last row sets the scale. Rebuilding the same molecules with a different
-embedding seed reproduces pair similarity to 0.006 at *r* 0.995 — the reference
+embedding seed reproduces pair similarity to 0.006 at *r* 0.995, which is the reference
 agrees with itself an order of magnitude more tightly than PharmCast agrees with
 it. **The ground truth is not the problem**, and 0.006 is the floor no surrogate
 can beat.
 
 ![30,000 pairs: surrogate similarity against real similarity](assets/surrogate-vs-real.png)
 
-## Applicability domain — read this before trusting a score
+## Applicability domain: read this before trusting a score
 
 > **PharmCast SP is calibrated for catalogue-like chemistry up to about 600 Da,
 > plus peptides to about 900 Da.** Outside that range it is extrapolating.
 
 The reason is entirely in the training corpus. The screening collection is
 filtered at 600 Da on ingest, so it contributes nothing above that line *by
-construction*. Only about **37,060 training molecules — 1.43% of the corpus —
+construction*. Only about **37,060 training molecules, 1.43% of the corpus,
 sit above 600 Da, and every one of them is a peptide.** Above 800 Da it is
 0.10%. So when PharmCast is asked about a large non-peptide drug it is
 extrapolating from a few thousand peptides, and the error rises from 0.02 to
@@ -141,14 +243,45 @@ A model card that hides its failure mode is worse than no model card.
 
 ## Training corpora
 
+**PharmCast-SP v4** (2026-08-21):
+
 | Corpus | Molecules | Share | Mass range |
 |---|---:|---:|---|
-| Screening collection | 2,511,440 | 96.69% | 142–598 Da, median 344 |
-| Loop peptides, ensemble enhanced | 86,039 | 3.31% | 116–988 Da, median 576 |
+| Screening collection | 2,511,440 | 96.69% | 142-598 Da, median 344 |
+| Loop peptides, ensemble enhanced | 86,039 | 3.31% | 116-988 Da, median 576 |
 | **Total** | **2,597,479** | 100% | |
 
-Naming: **S** is the screening collection, **P** is peptides. There is no
-peptide-only model, and "composite" means SP rather than a third thing.
+**PharmCast-SCP 22aug2026**, which adds a third corpus:
+
+| Corpus | Molecules | Share | Mass range |
+|---|---:|---:|---|
+| Screening collection | 2,702,332 | 96.19% | 142-598 Da, median 344 |
+| Loop peptides, ensemble enhanced | 97,039 | 3.45% | 116-988 Da, median 576 |
+| Large ChEMBL, activity-backed | 9,909 | 0.35% | 600-1000 Da, ascending build |
+| **Total** | **2,809,280** | 100% | |
+
+Every model is validated on the **same 9,975 held-out screening collection
+molecules**, reserved by `TEST_CHUNKS = 20`, so versions are directly
+comparable.
+
+Naming: **S** is the screening collection, **C** is ChEMBL, **P** is peptides.
+There is no peptide-only model, and "composite" means SP rather than a third
+thing.
+
+The ChEMBL corpus exists to repair a specific, measured weakness. The screening
+collection is filtered at MW 600 on ingest, so in SP **only 1.4% of training
+sits above MW 600 and every molecule of it is a peptide**. Asked about a large
+non-peptidic drug, SP is extrapolating, and its error rises from 0.02 to 0.07
+with r falling from 0.97 to 0.63. The ChEMBL corpus is real, activity-backed
+chemistry in exactly that band, built in ascending molecular weight so the
+model's competence extends upward from what it already knows rather than
+jumping into a gap.
+
+**The evaluation compounds are held out of training** by ChEMBL identifier *and*
+by canonical structure, because the training corpus and the large-compound
+evaluation set are drawn from the same ChEMBL band and would otherwise overlap.
+Training on them would improve the reported large-compound error for an entirely
+artificial reason.
 
 Loops of two to six residues were extracted from crystal structures at 2.5 Å
 resolution and R-free 0.22, capped with their real flanking atoms and checked
@@ -167,7 +300,7 @@ given shape is signal about how it occupies space.
    real calculation. There is no reason to accept model error on the one
    molecule the work is aimed at.
 2. **PharmCast scores rank; they are not quoted.** The predicted fingerprint
-   carries a small systematic offset in bit count — harmless for ordering and
+   carries a small systematic offset in bit count, harmless for ordering and
    misleading in a report. Published numbers come from a real rescore of the
    survivors.
 
@@ -188,12 +321,12 @@ training corpus.
 
 ## Licence
 
-**[Apache-2.0](LICENSE)** — code and model weights alike. Use it commercially,
+**[Apache-2.0](LICENSE)** covers code and model weights alike. Use it commercially,
 fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
 
 `NOTICE` credits the sources the model was trained on: the RCSB Protein Data
 Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No
-training corpus is redistributed here — only the trained parameters — and
+training corpus is redistributed here, only the trained parameters, and
 keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
 attribution those sources ask for.
 

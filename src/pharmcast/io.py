@@ -41,6 +41,50 @@ def read_pfp(path):
                 continue
 
 
+# The trailing descriptor fields, in the order the record carries them.
+PFP_FIELDS = ("version", "mw", "heavy", "bits", "rotb", "nconf",
+              "X", "A", "D", "H", "N", "P", "R")
+
+
+def read_pfp_records(path):
+    """Iterate a `.pfp` -> (name, [330 ints], metadata dict).
+
+    `read_pfp` deliberately ignores everything after the 330 integers, because
+    that is what every comparison tool does. This one keeps the trailing
+    descriptor block as well, so a reader can see the format version, molecular
+    weight, heavy-atom count, set-bit count, rotatable bonds and conformer count
+    that the record was written with.
+
+    Missing or short trailing blocks give an empty dict rather than raising: a
+    record is still a valid fingerprint without them.
+    """
+    with _open(path) as fh:
+        for line in fh:
+            parts = line.split()
+            if len(parts) < N_INTS + 1:
+                continue
+            try:
+                words = [int(v) for v in parts[1:N_INTS + 1]]
+            except ValueError:
+                continue
+            tail = parts[N_INTS + 1:]
+            meta = {}
+            for key, val in zip(PFP_FIELDS, tail):
+                if key == "version":
+                    meta[key] = val
+                elif key == "mw":
+                    try:
+                        meta[key] = float(val)
+                    except ValueError:
+                        pass
+                else:
+                    try:
+                        meta[key] = int(val)
+                    except ValueError:
+                        pass
+            yield parts[0], words, meta
+
+
 def write_pfp(path, records, nconf=100):
     """Write a native `.pfp` from (name, words) pairs, or (name, words, smiles).
 

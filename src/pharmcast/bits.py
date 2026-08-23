@@ -21,6 +21,11 @@ specific *pharmacophore number* -- to line a bit up against `pfpall`'s own
 numbering -- does the difference matter, and `native_index` converts.
 
 Do not change one side to match the other. The round trip is verified by test.
+
+Word views use the explicit `'<u4'` dtype rather than `np.uint32` so the packing
+does not depend on the host's byte order. Every mainstream platform -- x86_64,
+Apple Silicon, aarch64 -- is little-endian, which is precisely why an endianness
+bug here would stay invisible until the one machine where it mattered.
 """
 from __future__ import annotations
 
@@ -33,7 +38,7 @@ N_PHARM = 10549          # real pharmacophores; the rest is padding
 
 def unpack(words):
     """330 integers -> bool array of N_PHARM pharmacophore bits (packed order)."""
-    w = np.asarray(words, dtype=np.uint32)
+    w = np.asarray(words, dtype="<u4")
     return np.unpackbits(w.view(np.uint8),
                          bitorder="little")[:N_PHARM].astype(bool)
 
@@ -47,7 +52,7 @@ def pack(bits):
     b = np.zeros(N_BITS, dtype=bool)
     b[:len(bits)] = np.asarray(bits, dtype=bool)[:N_BITS]
     b[N_PHARM:] = False
-    return [int(v) for v in np.packbits(b, bitorder="little").view(np.uint32)]
+    return [int(v) for v in np.packbits(b, bitorder="little").view("<u4")]
 
 
 def native_index(i):

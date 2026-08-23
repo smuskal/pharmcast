@@ -16,4 +16,6 @@ venv/
 *.pfp.gz
 *.sdf
 *.smi
+# ...except the small example inputs, which the worked scripts need
+!examples/data/*.smi
 !examples/*.smi

@@ -22,6 +22,20 @@ import numpy as np
 
 from .bits import N_BITS, N_PHARM, unpack
 
+# np.bitwise_count landed in NumPy 2.0. Plenty of working environments are
+# still pinned to NumPy 1.x by some other dependency, and this library has no
+# other reason to demand 2.x, so fall back to a 256-entry lookup table rather
+# than raising AttributeError deep inside a screen. The table is the standard
+# byte-popcount trick and gives identical results.
+if hasattr(np, "bitwise_count"):
+    _popcount = np.bitwise_count
+else:                                                    # pragma: no cover
+    _POPCOUNT_TABLE = np.array(
+        [bin(i).count("1") for i in range(256)], dtype=np.uint8)
+
+    def _popcount(a):
+        return _POPCOUNT_TABLE[a]
+
 
 def pharmtan(a, b):
     """Tanimoto between two 330-integer fingerprints."""
@@ -38,14 +52,18 @@ tanimoto = pharmtan
 
 def _matrix(fps):
     """-> uint8 array [n, N_BITS/8], the packed bytes of each fingerprint."""
-    w = np.asarray(list(fps), dtype=np.uint32)
+    # '<u4' rather than np.uint32: the byte order of the packed view must not
+    # depend on the host's endianness, or two machines would disagree about
+    # what the same fingerprint is. Every mainstream platform is little-endian,
+    # which is exactly why this would go unnoticed until it did not.
+    w = np.asarray(list(fps), dtype="<u4")
     return w.view(np.uint8).reshape(len(w), -1)
 
 
 def pharmtan_matrix(queries, targets=None):
     """All-against-all Tanimoto -> float array [n_queries, n_targets].
 
-    Vectorised over packed bytes with `np.bitwise_count`, which is roughly two
+    Vectorised over packed bytes with a popcount, which is roughly two
     orders of magnitude faster than looping `pharmtan`. This is the routine to
     use for a screen; `pharmtan` is for one pair.
 
@@ -54,11 +72,11 @@ def pharmtan_matrix(queries, targets=None):
     """
     q = _matrix(queries)
     t = q if targets is None else _matrix(targets)
-    nq = np.bitwise_count(q).sum(axis=1).astype(np.float64)
-    nt = np.bitwise_count(t).sum(axis=1).astype(np.float64)
+    nq = _popcount(q).sum(axis=1).astype(np.float64)
+    nt = _popcount(t).sum(axis=1).astype(np.float64)
     out = np.empty((len(q), len(t)), dtype=np.float64)
     for i in range(len(q)):
-        inter = np.bitwise_count(q[i] & t).sum(axis=1).astype(np.float64)
+        inter = _popcount(q[i] & t).sum(axis=1).astype(np.float64)
         out[i] = inter / np.maximum(nq[i] + nt - inter, 1e-9)
     return out
 

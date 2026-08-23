@@ -92,7 +92,8 @@ class PharmCast:
         the per-chunk records run to tens of thousands of entries and are not
         summary information.
         """
-        BULK = {"peptide_names", "chunk_names", "history", "taken_names"}
+        BULK = {"peptide_names", "chunk_names", "history", "taken_names",
+                "chembl_names", "tail_names"}
         out = {}
         for k in ("release", "features", "hidden", "n_bits"):
             if k in self.blob:
@@ -105,7 +106,79 @@ class PharmCast:
                         out[k + "_n"] = len(v)
                     elif not isinstance(v, (list, dict)):
                         out[k] = v
+
+        # APPLICABILITY DOMAIN. A card that reports only how many molecules a
+        # model saw invites the reader to assume it saw them evenly. It did not:
+        # the screening collection is filtered at MW 600 on ingest, so every
+        # training molecule above that weight comes from another corpus. State
+        # the range and where the model is extrapolating, in the card itself,
+        # because that is where someone deciding whether to trust a prediction
+        # will look.
+        dom = self.blob.get("applicability")
+        if isinstance(dom, dict):
+            out["applicability"] = dom
+        else:
+            out["applicability"] = self._infer_domain(out)
         return out
+
+    @staticmethod
+    def _infer_domain(out):
+        """Domain from corpus composition when the blob does not record one.
+
+        Measured on the corpora themselves, not assumed:
+          screening collection  MW 142-598, median 344, p99 498 (hard cap 600)
+          loop peptides         MW 116-988, median 576, p99 843
+          large ChEMBL          MW 600-1000, activity-backed, ascending build
+        """
+        coll = out.get("train_collection") or 0
+        pep = out.get("train_peptides") or 0
+        chem = out.get("train_chembl") or 0
+        tail = out.get("train_tail") or 0
+        parts = []
+        if coll:
+            parts.append({"corpus": "Enamine screening collection",
+                          "molecules": coll, "mw_range": [142, 598],
+                          "mw_median": 344, "mw_p99": 498,
+                          "note": "filtered at MW 600 on ingest"})
+        if tail:
+            parts.append({"corpus": "Enamine collection, large tail",
+                          "molecules": tail, "mw_range": [557, 917],
+                          "mw_median": 643,
+                          "note": "the compounds the MW 600 ingest filter "
+                                  "skipped, fingerprinted separately"})
+        if pep:
+            parts.append({"corpus": "loop peptides", "molecules": pep,
+                          "mw_range": [116, 988], "mw_median": 576,
+                          "mw_p99": 843})
+        if chem:
+            parts.append({"corpus": "large ChEMBL, activity-backed",
+                          "molecules": chem, "mw_range": [600, 1000],
+                          "note": "built in ascending molecular weight; "
+                                  "evaluation compounds held out by identifier "
+                                  "and by canonical structure"})
+        total = coll + tail + pep + chem
+        d = {"corpora": parts, "train_molecules": total}
+        if not chem and total:
+            # Without ChEMBL, everything above MW 600 is peptidic.
+            d["calibrated_for"] = ("catalogue-like chemistry to about MW 600, "
+                                   "plus peptides to about MW 900")
+            d["extrapolating_above"] = 600
+            d["caveat"] = ("about 1.4% of training sits above MW 600 and all "
+                           "of it is peptidic, so predictions for large "
+                           "non-peptidic molecules are extrapolation: measured "
+                           "error rises from 0.02 to 0.07 and r falls from "
+                           "0.97 to 0.63")
+        elif total:
+            d["calibrated_for"] = ("catalogue-like chemistry to about MW 600, "
+                                   "peptides to about MW 900, and "
+                                   "activity-backed ChEMBL chemistry in the "
+                                   "band the corpus has reached")
+            d["caveat"] = ("the ChEMBL corpus is built in ascending molecular "
+                           "weight, so the upper bound of reliable "
+                           "extrapolation moves with it; check "
+                           "train_chembl and the corpus band before trusting "
+                           "a prediction near the top of the range")
+        return d
 
     # ------------------------------------------------------------- prediction
     def _bits(self, smiles):
@@ -137,7 +210,7 @@ class PharmCast:
         bits = self._bits(smiles)
         bits[:, N_PHARM:] = False          # padding slots are never real
         packed = np.packbits(bits, axis=1, bitorder="little")
-        words = packed.view(np.uint32)
+        words = packed.view("<u4")      # explicit LE; see bits.py on byte order
         return [[int(v) for v in row] for row in words]
 
     def words(self, smi, *_ignored, **__ignored):
