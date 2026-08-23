@@ -63,14 +63,15 @@ checksummed, from **<https://pharmcast.ai/models>**.
 
 | Model | Endpoint | SHA-256 |
 |---|---|---|
-| PharmCast SP v4 | [`/models/pharmcast_sp_v4.pt`](https://pharmcast.ai/models/pharmcast_sp_v4.pt) | `d1f9c735…dc4f9252` |
+| **PharmCast SCP v5** (current) | [`/models/pharmcast_scp_v5.pt`](https://pharmcast.ai/models/pharmcast_scp_v5.pt) | `748c558c…ad29a3be` |
+| PharmCast SP v4 (superseded, retained) | [`/models/pharmcast_sp_v4.pt`](https://pharmcast.ai/models/pharmcast_sp_v4.pt) | `d1f9c735…dc4f9252` |
 | *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 ```bash
-curl -O https://pharmcast.ai/models/pharmcast_sp_v4.pt
+curl -O https://pharmcast.ai/models/pharmcast_scp_v5.pt
 curl -O https://pharmcast.ai/models/SHA256SUMS
 shasum -a 256 -c SHA256SUMS                      # macOS / Linux
-certutil -hashfile pharmcast_sp_v4.pt SHA256     # Windows
+certutil -hashfile pharmcast_scp_v5.pt SHA256    # Windows
 ```
 
 **A published checkpoint is never replaced in place.** A new release is added
@@ -211,10 +212,36 @@ across every release so versions stay comparable.
 
 | Regime | Median error | Correlation *r* | Pairwise ranking |
 |---|---:|---:|---:|
-| Catalogue chemistry | 0.02 | 0.97 | 92% |
-| Loop peptides | 0.02 | 0.97 | not measured |
-| Large compounds, above 600 Da | 0.07 | 0.63 | 71% |
+| Catalogue chemistry | 0.019 | 0.968 | 92% |
+| Loop peptides | 0.02 | 0.97 | n/a |
+| Large compounds, above 600 Da | 0.065 | 0.72 | 71% |
 | *The real calculation against itself* | *0.006* | *0.995* | *ceiling* |
+
+### What v5 changed, by population
+
+The letters name the corpora, not the version: **S**creening collection,
+**C**hEMBL, **P**eptides.
+
+| Population | SP v4 | SCP v5 |
+|---|---:|---:|
+| Validation agreement, median MCC | 0.895 | 0.895 |
+| Catalogue chemistry, median error | 0.018 | 0.019 |
+| Catalogue chemistry, Pearson *r* | 0.967 | 0.968 |
+| Loop peptides, within 0.05 | 78% | **82%** |
+| Large ChEMBL >600 Da, median error | 0.073 | **0.065** |
+| Large ChEMBL >600 Da, within 0.05 | 35% | **40%** |
+| Large ChEMBL >600 Da, Pearson *r* | 0.63 | **0.72** |
+
+The gain is concentrated where v4 was weakest, and the headline validation figure
+stays flat at 0.895 **because that validation set is catalogue-only and cannot
+see an improvement above 600 Da.** Read a model by population, not by one number.
+
+Between v2 and v4 a 51% larger corpus bought a real gain where the model was
+already strong and essentially nothing where it is weakest. That is not a failure
+of scale but a statement about which data was added: **scaling a library that
+stops at 600 Da cannot extend competence past 600 Da, however much of it is
+added.** v5 is the first release to carry non-peptidic catalogue chemistry above
+that line at all.
 
 That last row sets the scale. Rebuilding the same molecules with a different
 embedding seed reproduces pair similarity to 0.006 at *r* 0.995, which is the reference
@@ -226,8 +253,13 @@ can beat.
 
 ## Applicability domain: read this before trusting a score
 
-> **PharmCast SP is calibrated for catalogue-like chemistry up to about 600 Da,
-> plus peptides to about 900 Da.** Outside that range it is extrapolating.
+> **PharmCast is calibrated for catalogue-like chemistry to about 600 Da,
+> peptides to about 900 Da, and activity-backed ChEMBL chemistry in the band the
+> corpus has reached.** Outside that range it is extrapolating.
+
+**The upper bound moves between releases.** The ChEMBL corpus is built in
+ascending molecular weight, so read `card()["applicability"]` out of the
+checkpoint rather than assuming a fixed number.
 
 The reason is entirely in the training corpus. The screening collection is
 filtered at 600 Da on ingest, so it contributes nothing above that line *by
