@@ -229,14 +229,16 @@ It loads no model, because the fingerprints are already in the file.
 ## Accuracy
 
 Measured on molecules the model had never seen, on a validation set held fixed
-across releases up to SCP v5. **SCP v6 is not on this table**: it reserved no
-holdout and is evaluated instead on molecules fingerprinted after its training
-snapshot, which is a different population. See below.
+across releases up to SCP v5, which is also the model in the scatter below.
+**SCP v6 is not on this table and not in the scatter.** It reserved no holdout
+and is evaluated instead on molecules fingerprinted after its training snapshot,
+a different population; its scatter is regenerated on that basis and published
+when the provenance artifact exists. See below.
 
 ![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
 
-*Predicted against real pairwise similarity on held out molecules, by population,
-for PharmCast SCP v5. The dashed line is exact agreement. Catalogue chemistry and
+*PharmCast SCP v5. Predicted against real pairwise similarity on held out
+molecules, by population. The dashed line is exact agreement. Catalogue chemistry and
 loop peptides sit tight to it. ChEMBL compounds do not, and the scatter is
 asymmetric: the surrogate over predicts more often than it under predicts. The
 third panel is the population the corpus work exists to improve.*
@@ -292,15 +294,17 @@ construction*. Only about **37,060 training molecules, 1.43% of the corpus,
 sit above 600 Da, and every one of them is a peptide.** Above 800 Da it is
 0.10%. So when PharmCast is asked about a large non-peptide drug it is
 extrapolating from a few thousand peptides, and the error rises from 0.02 to
-0.07 while *r* falls from 0.97 to 0.63. This is a genuine size effect and not
-merely a harder task: a matched-spread catalogue control gives 92% on the
-identical protocol.
+0.06 while *r* falls from 0.97 to 0.72 on SCP v5, the most recent model with a
+published scatter. This is a genuine size effect and not merely a harder task: a
+matched-spread catalogue control gives 92% on the identical protocol. The figures
+were worse before ChEMBL entered the corpus, at 0.07 and *r* 0.63 on the
+peptide-only SP models.
 
 A model card that hides its failure mode is worse than no model card.
 
 ## Training corpora
 
-**PharmCast-SP v4** (2026-08-21):
+Where the three corpora stand today:
 
 | Corpus | Fingerprinted today | Expected total | Complete |
 |---|---:|---:|---:|
@@ -309,7 +313,7 @@ A model card that hides its failure mode is worse than no model card.
 | Loop peptides | 100,000 | 130,000 | 77% |
 | **All three** | **3,220,000** | **6,197,537** | **52%** |
 
-![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 64%, ChEMBL 10%, loop peptides 82%, all three 52%](assets/corpus-progress.jpg)
+![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 64%, ChEMBL 11%, loop peptides 77%, all three 52%](assets/corpus-progress.jpg)
 
 **The finished training set is expected to be 6,197,537 molecules**, roughly
 twice the size of the corpus SCP v6 was trained on, and about half of it is
@@ -359,10 +363,10 @@ There is no peptide-only model, and "composite" means SP rather than a third
 thing.
 
 The ChEMBL corpus exists to repair a specific, measured weakness. The screening
-collection is filtered at MW 600 on ingest, so in SP **only 1.4% of training
-sits above MW 600 and every molecule of it is a peptide**. Asked about a large
-non-peptidic drug, SP is extrapolating, and its error rises from 0.02 to 0.07
-with r falling from 0.97 to 0.63. The ChEMBL corpus is real, activity-backed
+collection is filtered at MW 600 on ingest, so in the SP models **only 1.4% of
+training sat above MW 600 and every molecule of it was a peptide**. Asked about a
+large non-peptidic drug, SP was extrapolating, and its error rose from 0.02 to
+0.07 with r falling from 0.97 to 0.63. The ChEMBL corpus is real, activity-backed
 chemistry in exactly that band, built in ascending molecular weight so the
 model's competence extends upward from what it already knows rather than
 jumping into a gap.
