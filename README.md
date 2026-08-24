@@ -26,11 +26,9 @@ measured distances. Enumerate every combination of feature type and distance
 range and you have a fixed vocabulary of triangles; each one is a bit, and a
 molecule sets the bit for every triangle it can form.
 
-![A three point pharmacophore is three typed features and the three binned distances between them; enumerating every triangle satisfying the triangle inequality gives 10,549 distinct pharmacophores](assets/pharmacophore-bit.jpg)
-
-*What one bit is. Enumerating every triangle that satisfies the triangle
-inequality on the bin bounds gives 10,549 distinct pharmacophores, stored as 330
-unsigned 32-bit words.*
+*A figure for this section is being regenerated. The one previously here still
+rendered the packed word count as if it were the fingerprint width, so it has
+been withdrawn rather than republished.*
 
 Because the vocabulary is geometric rather than substructural, two molecules
 with nothing in common on paper score highly if they present their features in
@@ -232,13 +230,18 @@ It loads no model, because the fingerprints are already in the file.
 snapshot closed, so the model cannot have seen them. 573 molecules per
 population.
 
-| Population | Median error | Within 0.05 | Pearson *r* | Ranking accuracy |
-|---|---:|---:|---:|---:|
-| Catalogue chemistry | 0.017 | 89% | 0.970 | 0.921 |
-| ChEMBL, activity backed | 0.021 | 79% | 0.951 | 0.909 |
-| Loop peptides | 0.041 | 59% | 0.930 | 0.889 |
-| **All three combined** | **0.018** | **87%** | **0.966** | |
-| *Reference against itself* | *0.006* | | *0.995* | *ceiling* |
+| Population | n | Ranking | Median error | Pearson *r* | Within 0.05 | Median MCC |
+|---|---:|---:|---:|---:|---:|---:|
+| Catalogue chemistry | 573 | 0.921 | 0.017 | 0.970 | 89% | 0.898 |
+| ChEMBL, activity backed | 573 | 0.909 | 0.021 | 0.951 | 79% | 0.834 |
+| Loop peptides | 573 | 0.889 | 0.041 | 0.930 | 59% | 0.860 |
+| **All three combined** | | | **0.018** | **0.966** | **87%** | |
+| *Reference against itself* | | *ceiling* | *0.006* | *0.995* | | |
+
+Every figure above is regenerated from the released model against the
+51,291-molecule post-snapshot population, seed 20260819, with one training
+overlap excluded. The provenance record carries the model SHA, the seed, the
+per-population membership digests and the excluded identifier.
 
 That last row sets the scale. Rebuilding the same molecules with a different
 embedding seed reproduces pair similarity to 0.006 at *r* 0.995, so the
