@@ -224,8 +224,9 @@ It loads no model, because the fingerprints are already in the file.
 ## Accuracy
 
 Measured on molecules the model had never seen, on a validation set held fixed
-across releases up to SCP v5. **SCP v6 used zero holdout and is not on this
-table.**
+across releases up to SCP v5. **SCP v6 is not on this table**: it reserved no
+holdout and is evaluated instead on molecules fingerprinted after its training
+snapshot, which is a different population. See below.
 
 ![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
 
@@ -321,12 +322,23 @@ Its output layer is 10,549 wide, one per pharmacophore.
 All three corpora are still being fingerprinted and a model is trained
 periodically as they grow. Each release is a snapshot, not a conclusion.
 
-**SCP v6 was trained with zero holdout**: `validation_molecules = 0`. It saw
-every available molecule, including the set earlier models were validated on, so
-**no validation figure exists for it and none can be computed**. Do not compare
-its numbers with v2 through v5, and do not read the two together as a trend.
+**SCP v6 reserved no holdout split**: `validation_molecules = 0`. It is measured
+a different way. Its evaluation population is the molecules fingerprinted
+*after* its training snapshot was taken, which the model therefore cannot have
+seen: a strict novel set of **51,291** molecules, being 38,185 screening
+collection, 7,406 ChEMBL head, 3,200 ChEMBL tail and 2,500 loop peptides, with
+one training overlap excluded.
 
-Earlier releases were measured on a fixed 9,975-molecule split that never moved.
+That is a genuinely unseen population, but it is **not the same population** v2
+through v5 were scored on, which was a fixed 9,975-molecule split that never
+moved. The molecular weight distributions differ materially. **Do not read the
+two together as one trend**, and do not compare a v6 result above 600 Da
+directly against the earlier models.
+
+Metric values for v6 are published only once a provenance-backed artifact exists
+recording the model SHA, the frozen snapshot digest, the exact membership,
+the excluded overlap IDs, the sampling seed and the metric definitions.
+
 Every release is published beside its predecessors and never replaces one.
 
 Naming: **S** is the screening collection, **C** is ChEMBL, **P** is peptides.
