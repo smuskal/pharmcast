@@ -49,9 +49,14 @@ what scaffold hopping looks like from inside the descriptor.*
 
 ![Two molecules through 2D features, the network, the predicted fingerprint against the real one, and the resulting similarity](assets/how-it-works.jpg)
 
-*The conventional route generates a conformer ensemble and runs the reference
-calculation over it. PharmCast predicts the same ensemble record from the two
-dimensional structure and skips the ensemble entirely.*
+*The two routes to a fingerprint. The conventional route generates a conformer
+ensemble and runs the reference calculation over it. PharmCast predicts the same
+ensemble record from the two dimensional structure and skips the ensemble
+entirely. Panel E is one real catalogue pair scored by PharmCast SCP v6: the
+reference calculation gives a pharmacophore Tanimoto of 0.383 and PharmCast
+predicts 0.364, against a two dimensional Morgan Tanimoto of 0.149. The network
+is 2,059 inputs, hidden layers of 1,024 and 512, and one output unit per
+pharmacophore, 10,549 in total, for 8,045,877 parameters.*
 
 ---
 
@@ -230,15 +235,17 @@ snapshot, which is a different population. See below.
 
 ![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
 
-*Predicted against real pairwise similarity on held-out molecules, by population,
-for PharmCast SP v4. The dashed line is exact agreement. Catalogue chemistry and
-loop peptides sit tight to it; large ChEMBL compounds do not.*
+*Predicted against real pairwise similarity on held out molecules, by population,
+for PharmCast SCP v5. The dashed line is exact agreement. Catalogue chemistry and
+loop peptides sit tight to it. ChEMBL compounds do not, and the scatter is
+asymmetric: the surrogate over predicts more often than it under predicts. The
+third panel is the population the corpus work exists to improve.*
 
 | Regime | Median error | Correlation *r* | Pairwise ranking |
 |---|---:|---:|---:|
-| Catalogue chemistry | 0.019 | 0.968 | 92% |
+| Catalogue chemistry | 0.02 | 0.97 | 92% |
 | Loop peptides | 0.02 | 0.97 | n/a |
-| Large compounds, above 600 Da | 0.065 | 0.72 | 71% |
+| ChEMBL compounds above 600 Da | 0.06 | 0.72 | n/a |
 | *The real calculation against itself* | *0.006* | *0.995* | *ceiling* |
 
 ### Interim numbers, not a trend
@@ -261,10 +268,13 @@ can beat.
 
 ![The same pairs coloured by 2D Morgan similarity, with correlation essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
 
-*The same pairs coloured by two dimensional Morgan similarity. Agreement does not
-depend on 2D similarity: r = 0.958 for the most 2D-dissimilar pairs against
-0.972 for the least, so the model is predicting three dimensional feature
-geometry rather than restating its own input.*
+*Predicted against real pairwise similarity, coloured by two dimensional Morgan
+similarity, green for the most dissimilar pairs through red for the least.
+Agreement does not depend on 2D similarity, so the model is predicting three
+dimensional feature geometry rather than restating its own input. PharmCast SCP
+v5 on the fixed validation split, 30,000 pairs drawn stratified across five 2D
+bands. Pearson within the bands is 0.966, 0.969, 0.970, 0.970 and 0.957 from the
+least 2D similar to the most. That flatness is the claim the panel makes.*
 
 ## Applicability domain: read this before trusting a score
 
@@ -294,15 +304,18 @@ A model card that hides its failure mode is worse than no model card.
 
 | Corpus | Fingerprinted today | Expected total | Complete |
 |---|---:|---:|---:|
-| Screening collection | 2,955,423 | 4,619,276 | 64% |
-| ChEMBL | 142,482 | 1,412,742 † | 10% |
-| Loop peptides | 108,786 | 132,878 | 82% |
-| **All three** | **3,206,691** | **6,164,896** | **52%** |
+| Screening collection | 2,970,000 | 4,620,000 | 64% |
+| ChEMBL | 150,000 | 1,450,000 † | 11% |
+| Loop peptides | 100,000 | 130,000 | 77% |
+| **All three** | **3,220,000** | **6,197,537** | **52%** |
 
 ![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 64%, ChEMBL 10%, loop peptides 82%, all three 52%](assets/corpus-progress.jpg)
 
-**The finished training set is expected to be about 6.2 million molecules**, and
-roughly half of it is fingerprinted today. Every molecule is fingerprinted with
+**The finished training set is expected to be 6,197,537 molecules**, roughly
+twice the size of the corpus SCP v6 was trained on, and about half of it is
+fingerprinted today. The growth is not evenly distributed: the screening
+collection is most of the mass, while ChEMBL is the least complete and grows the
+most in proportion. Every molecule is fingerprinted with
 the real 100-conformer calculation, which is what makes the corpus slow to build
 and worth building.
 
@@ -369,9 +382,12 @@ given shape is signal about how it occupies space.
 
 ![One loop sequence in several deposited conformations, with the similarity between them](assets/loop-ensembles.jpg)
 
-*One loop sequence, several deposited conformations, and the similarity between
-them. The median Tanimoto between two crystal conformations of the same sequence
-is 0.878, which is what the ensemble record is built to capture.*
+*One loop sequence, every deposited conformation of it, and the similarity
+between them. The sequence LGGK appears 217 times across 61 Protein Data Bank
+entries; 201 share the same 25 heavy atoms and all 201 are drawn. Across 25,000
+loop sequences the median is 0.878, which is what the ensemble record is built to
+capture. Regenerated at each release, so it grows as more structures are
+extracted.*
 
 ---
 
