@@ -232,9 +232,9 @@ population.
 
 | Population | n | Ranking | Median error | Pearson *r* | Within 0.05 | Median MCC |
 |---|---:|---:|---:|---:|---:|---:|
-| Catalogue chemistry | 573 | 0.921 | 0.017 | 0.970 | 89% | 0.898 |
-| ChEMBL, activity backed | 573 | 0.909 | 0.021 | 0.951 | 79% | 0.834 |
-| Loop peptides | 573 | 0.889 | 0.041 | 0.930 | 59% | 0.860 |
+| Catalogue chemistry | 573 | 0.921 | 0.017 | 0.970 | 89% | 0.90 |
+| ChEMBL, activity backed | 573 | 0.909 | 0.021 | 0.951 | 79% | 0.83 |
+| Loop peptides | 573 | 0.889 | 0.041 | 0.930 | 59% | 0.86 |
 | **All three combined** | | | **0.018** | **0.966** | **87%** | |
 | *Reference against itself* | | *ceiling* | *0.006* | *0.995* | | |
 
