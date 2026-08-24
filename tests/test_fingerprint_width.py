@@ -106,3 +106,60 @@ def test_no_source_file_slices_to_the_pharmacophore_count():
             if pattern.search(joined) or pattern.search(joined.replace(" ", "")):
                 bad.append("%s:%d: %s" % (fn, n, joined))
     assert not bad, "packed-order truncation reintroduced:\n" + "\n".join(bad)
+
+
+def test_bits_accepts_both_checkpoint_shapes():
+    """The REAL _bits must return the pharmacophore basis from EITHER layer.
+
+    Two checkpoint shapes exist in the wild. Everything up to SCP v6 has an
+    output layer sized to the packed word count; SCP v7 onward is N_PHARM wide
+    and already in pharmacophore order. _bits applied PACK_POS unconditionally,
+    which raises on the narrow one, and nothing caught it because no test ever
+    drove _bits with a checkpoint at all.
+
+    This drives the shipped method with a stub network, so it exercises the
+    real branching rather than a copy of it.
+    """
+    import numpy as np
+    import torch
+    from pharmcast.model import PharmCast
+    from pharmcast.bits import N_PHARM, N_BITS, PACK_POS
+
+    truth = np.zeros(N_PHARM, dtype=bool)
+    truth[[0, 31, 32, 5000, 10527, 10528, 10548]] = True   # includes the top word
+
+    wide = np.zeros(N_BITS, dtype=np.float32)
+    wide[PACK_POS] = truth.astype(np.float32)
+    wide[10528:10539] = 1.0                     # phantoms set on purpose
+    narrow = truth.astype(np.float32)
+
+    class Stub(torch.nn.Module):
+        """Ignores its input and emits one fixed row per molecule."""
+        def __init__(self, row):
+            super().__init__()
+            self.row = torch.from_numpy(row)
+        def forward(self, x):
+            # _bits applies sigmoid and thresholds at 0.5, so push the row
+            # to the extremes first.
+            return (self.row - 0.5) * 40.0
+
+    def run(row):
+        obj = PharmCast.__new__(PharmCast)
+        obj.model = Stub(row)
+        obj.features = "binary2048"
+        obj.mean = np.zeros(2059, dtype=np.float32)
+        obj.std = np.ones(2059, dtype=np.float32)
+        return obj._bits(["CCO"])
+
+    for label, row in (("packed width", wide), ("pharmacophore width", narrow)):
+        got = run(row)
+        assert got.shape == (1, N_PHARM), "%s gave %r" % (label, got.shape)
+        assert np.array_equal(got[0], truth), (
+            "%s lost or mirrored bits: %r" % (label, np.nonzero(got[0])[0]))
+
+    try:
+        run(np.zeros(9999, dtype=np.float32))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a third width must raise, not be guessed at")

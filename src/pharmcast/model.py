@@ -200,12 +200,27 @@ class PharmCast:
             for i in range(0, x.shape[0], 512):
                 p = torch.sigmoid(self.model(torch.from_numpy(x[i:i + 512])))
                 out.append(p.numpy() >= 0.5)
-        # The fingerprint is N_PHARM pharmacophores. A checkpoint whose output
-        # layer was sized to the packed word count carries columns past that;
-        # they are not pharmacophores and never leave this method.
-        if out:
-            return np.vstack(out)[:, PACK_POS]
-        return np.zeros((0, N_PHARM), dtype=bool)
+        # The fingerprint is N_PHARM pharmacophores. Two checkpoint shapes
+        # exist and both must land at [n, N_PHARM] with pharmacophore j at
+        # column j:
+        #
+        #   N_BITS  wide, the packed word count, is what every model up to
+        #           SCP v6 emits. PACK_POS reorders and drops the eleven
+        #           slots that carry no pharmacophore.
+        #   N_PHARM wide is what SCP v7 onward emits. It is already in
+        #           pharmacophore order and must be left alone. Indexing it
+        #           by PACK_POS would raise, because PACK_POS reaches 10559.
+        if not out:
+            return np.zeros((0, N_PHARM), dtype=bool)
+        raw = np.vstack(out)
+        if raw.shape[1] == N_PHARM:
+            return raw
+        if raw.shape[1] == N_BITS:
+            return raw[:, PACK_POS]
+        raise ValueError(
+            "checkpoint emits %d columns, which is neither the pharmacophore "
+            "width %d nor the packed width %d"
+            % (raw.shape[1], N_PHARM, N_BITS))
 
     def words_batch(self, smiles):
         """-> list of 330-integer lists, native representation.
