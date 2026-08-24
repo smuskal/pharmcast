@@ -81,15 +81,15 @@ checksummed, from **<https://pharmcast.ai/models>**.
 
 | Model | Endpoint | SHA-256 |
 |---|---|---|
-| **PharmCast SCP v5** (current) | [`/models/pharmcast_scp_v5.pt`](https://pharmcast.ai/models/pharmcast_scp_v5.pt) | `748c558c…ad29a3be` |
-| PharmCast SP v4 (superseded, retained) | [`/models/pharmcast_sp_v4.pt`](https://pharmcast.ai/models/pharmcast_sp_v4.pt) | `d1f9c735…dc4f9252` |
+| **PharmCast SCP v6** (current) | GitHub release asset `pharmcast_scp_v6.pt` | `264b5c14…1ecf94ce` |
+| PharmCast SCP v5 (superseded, retained) | [`/models/pharmcast_scp_v5.pt`](https://pharmcast.ai/models/pharmcast_scp_v5.pt) | `748c558c…ad29a3be` |
 | *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 ```bash
-curl -O https://pharmcast.ai/models/pharmcast_scp_v5.pt
+# v6 is a GitHub release asset; download it from the Releases page
 curl -O https://pharmcast.ai/models/SHA256SUMS
 shasum -a 256 -c SHA256SUMS                      # macOS / Linux
-certutil -hashfile pharmcast_scp_v5.pt SHA256    # Windows
+certutil -hashfile pharmcast_scp_v6.pt SHA256    # Windows
 ```
 
 **A published checkpoint is never replaced in place.** A new release is added
@@ -223,8 +223,9 @@ It loads no model, because the fingerprints are already in the file.
 
 ## Accuracy
 
-Measured on molecules the model has never seen, on a validation set held fixed
-across every release so versions stay comparable.
+Measured on molecules the model had never seen, on a validation set held fixed
+across releases up to SCP v5. **SCP v6 used zero holdout and is not on this
+table.**
 
 ![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
 
@@ -309,21 +310,24 @@ peptide corpus are enumerated sets whose totals are known, with only the
 fingerprinting left to do. ChEMBL selection is still running, so its expected
 total is an estimate and will move.
 
-SCP v5 trained on a 2,888,503-molecule snapshot of these three corpora as they
-stood on 23 August 2026.
+SCP v6 trained on a 3,281,914-molecule snapshot of these three corpora:
+3,058,290 screening collection, 215,182 ChEMBL (177,197 head and 37,985 tail),
+6,942 large catalogue tail, and 1,500 loop peptides. The peptide corpus was
+being rebuilt when this snapshot was taken, so v6 carries very few peptides.
+Its output layer is 10,549 wide, one per pharmacophore.
 
 ### Why the versions exist
 
 All three corpora are still being fingerprinted and a model is trained
-periodically as they grow; **v6 is in progress.** Each release is a snapshot, not
-a conclusion.
+periodically as they grow. Each release is a snapshot, not a conclusion.
 
-The validation split has never moved, the same 9,975 molecules since v2, so
-every model is measured on identical ground. That is what will make it possible
-to *estimate the performance of the finished model from these partial ones*, and
-to see whether the curve is still climbing or has converged, before the corpora
-are complete. Every release is published beside its predecessors and never
-replaces one.
+**SCP v6 was trained with zero holdout**: `validation_molecules = 0`. It saw
+every available molecule, including the set earlier models were validated on, so
+**no validation figure exists for it and none can be computed**. Do not compare
+its numbers with v2 through v5, and do not read the two together as a trend.
+
+Earlier releases were measured on a fixed 9,975-molecule split that never moved.
+Every release is published beside its predecessors and never replaces one.
 
 Naming: **S** is the screening collection, **C** is ChEMBL, **P** is peptides.
 There is no peptide-only model, and "composite" means SP rather than a third
