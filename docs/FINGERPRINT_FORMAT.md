@@ -3,8 +3,8 @@
 ## On the wire
 
 **A fingerprint is 10,549 pharmacophores.** It is *stored* in **330 unsigned
-32-bit words**, which is 10,560 bit slots, so eleven slots carry nothing. 10,560
-is a storage count and is never a fingerprint width.
+32-bit words**. A word count is storage and is never a fingerprint width; eleven
+of the packed positions carry no pharmacophore at all.
 
 The eleven empty slots are **not** the last eleven. See
 [FINGERPRINT_WIDTH.md](FINGERPRINT_WIDTH.md) for the ordering rule and the

@@ -1,8 +1,8 @@
 """Bit-level view of a pharmacophore fingerprint.
 
 **A fingerprint is 10,549 pharmacophores.** It is *stored* in 330 unsigned
-32-bit words, which is 10,560 bit slots, so eleven slots carry nothing. 10,560
-is a storage count and is never a fingerprint width.
+32-bit words. A word count is storage and is never a fingerprint width; eleven
+of the packed positions carry no pharmacophore at all.
 
 `unpack` returns one entry per pharmacophore, with **pharmacophore j at index
 j**, so a set bit is traceable to a specific typed triangle. `pack` is its exact
