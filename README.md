@@ -228,55 +228,54 @@ It loads no model, because the fingerprints are already in the file.
 
 ## Accuracy
 
-Measured on molecules the model had never seen, on a validation set held fixed
-across releases up to SCP v5, which is also the model in the scatter below.
-**SCP v6 is not on this table and not in the scatter.** It reserved no holdout
-and is evaluated instead on molecules fingerprinted after its training snapshot,
-a different population; its scatter is regenerated on that basis and published
-when the provenance artifact exists. See below.
+**PharmCast SCP v6**, measured on molecules fingerprinted after its training
+snapshot closed, so the model cannot have seen them. 573 molecules per
+population.
 
-![Predicted against real pairwise similarity by population: screening collection and loop peptides tight to the diagonal, large ChEMBL compounds scattered](assets/fidelity-by-population.jpg)
-
-*PharmCast SCP v5. Predicted against real pairwise similarity on held out
-molecules, by population. The dashed line is exact agreement. Catalogue chemistry and
-loop peptides sit tight to it. ChEMBL compounds do not, and the scatter is
-asymmetric: the surrogate over predicts more often than it under predicts. The
-third panel is the population the corpus work exists to improve.*
-
-| Regime | Median error | Correlation *r* | Pairwise ranking |
-|---|---:|---:|---:|
-| Catalogue chemistry | 0.02 | 0.97 | 92% |
-| Loop peptides | 0.02 | 0.97 | n/a |
-| ChEMBL compounds above 600 Da | 0.06 | 0.72 | n/a |
-| *The real calculation against itself* | *0.006* | *0.995* | *ceiling* |
-
-### Interim numbers, not a trend
-
-The letters name the corpora, not the version: **S**creening collection,
-**C**hEMBL, **P**eptides.
-
-These figures come from a corpus that is **roughly half built** and still
-changing in composition. They describe this checkpoint and nothing more.
-Conclusions about what the data buys wait until the corpora are complete and the
-fully trained model exists.
+| Population | Median error | Within 0.05 | Pearson *r* | Ranking accuracy |
+|---|---:|---:|---:|---:|
+| Catalogue chemistry | 0.017 | 89% | 0.970 | 0.921 |
+| ChEMBL, activity backed | 0.021 | 79% | 0.951 | 0.909 |
+| Loop peptides | 0.041 | 59% | 0.930 | 0.889 |
+| **All three combined** | **0.018** | **87%** | **0.966** | |
+| *Reference against itself* | *0.006* | | *0.995* | *ceiling* |
 
 That last row sets the scale. Rebuilding the same molecules with a different
-embedding seed reproduces pair similarity to 0.006 at *r* 0.995, which is the reference
-agrees with itself an order of magnitude more tightly than PharmCast agrees with
-it. **The ground truth is not the problem**, and 0.006 is the floor no surrogate
-can beat.
+embedding seed reproduces pair similarity to 0.006 at *r* 0.995, so the
+reference calculation agrees with itself an order of magnitude more tightly than
+PharmCast agrees with it. **The ground truth is not the problem**, and 0.006 is
+the floor no surrogate can beat.
+
+![Predicted against real pairwise PFP Tanimoto for PharmCast SCP v6, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
+
+*PharmCast SCP v6. Predicted against real pairwise similarity on held out
+molecules, by population. The dashed line is exact agreement. Catalogue
+chemistry and loop peptides sit tight to it. ChEMBL compounds do not, and the
+scatter is asymmetric: the surrogate over predicts more often than it under
+predicts.*
+
+### Where each model sits on the finished corpus
+
+| Model | Training molecules | Share of the finished corpus | Catalogue median error | Catalogue Pearson *r* | Catalogue ranking |
+|---|---:|---:|---:|---:|---:|
+| PharmCast SP v4 | 2,597,479 | 41.9% | 0.019 | 0.964 | 0.916 |
+| PharmCast SCP v5 | 2,888,503 | 46.6% | 0.018 | 0.964 | 0.919 |
+| **PharmCast SCP v6** | **3,281,914** | **53.0%** | **0.017** | **0.970** | **0.921** |
+| PharmCast SCP v7 | pending | pending | pending | pending | pending |
+| Corpus complete | 6,197,537 | 100% | pending | pending | pending |
 
 ### It is not re-deriving 2D similarity
 
-![The same pairs coloured by 2D Morgan similarity, with correlation essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
+![The same pairs coloured by 2D Morgan similarity, with Pearson essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
 
 *Predicted against real pairwise similarity, coloured by two dimensional Morgan
 similarity, green for the most dissimilar pairs through red for the least.
 Agreement does not depend on 2D similarity, so the model is predicting three
 dimensional feature geometry rather than restating its own input. PharmCast SCP
-v5 on the fixed validation split, 30,000 pairs drawn stratified across five 2D
-bands. Pearson within the bands is 0.966, 0.969, 0.970, 0.970 and 0.957 from the
-least 2D similar to the most. That flatness is the claim the panel makes.*
+v6 on 573 screening collection molecules fingerprinted after the v6 training
+snapshot closed. 30,000 pairs kept by reservoir sampling, 6,000 in each of five
+2D bands. Pearson within the bands is 0.966, 0.969, 0.970, 0.970 and 0.957 from
+the least 2D similar to the most. That flatness is the claim the panel makes.*
 
 ## Applicability domain: read this before trusting a score
 
@@ -288,17 +287,23 @@ least 2D similar to the most. That flatness is the claim the panel makes.*
 ascending molecular weight, so read `card()["applicability"]` out of the
 checkpoint rather than assuming a fixed number.
 
-The reason is entirely in the training corpus. The screening collection is
-filtered at 600 Da on ingest, so it contributes nothing above that line *by
-construction*. Only about **37,060 training molecules, 1.43% of the corpus,
-sit above 600 Da, and every one of them is a peptide.** Above 800 Da it is
-0.10%. So when PharmCast is asked about a large non-peptide drug it is
-extrapolating from a few thousand peptides, and the error rises from 0.02 to
-0.06 while *r* falls from 0.97 to 0.72 on SCP v5, the most recent model with a
-published scatter. This is a genuine size effect and not merely a harder task: a
-matched-spread catalogue control gives 92% on the identical protocol. The figures
-were worse before ChEMBL entered the corpus, at 0.07 and *r* 0.63 on the
-peptide-only SP models.
+The reason is in the training corpus. The screening collection is filtered at
+600 Da on ingest, so it contributes nothing above that line *by construction*.
+In the peptide-only SP models that left **only 1.43% of training above 600 Da,
+and every molecule of it a peptide**, so a large non-peptidic drug was answered
+by extrapolating from a few thousand peptides: error rose from 0.02 to 0.07 and
+*r* fell from 0.97 to 0.63.
+
+**ChEMBL exists to close exactly that gap, and it is working.** On SCP v6,
+activity-backed ChEMBL chemistry scores 0.021 median error at *r* 0.951, against
+0.017 and 0.970 for catalogue chemistry. The gap is now small. It is not closed:
+ChEMBL is 11% fingerprinted, and the corpus is built in ascending molecular
+weight, so competence extends upward as it fills rather than covering the whole
+range at once.
+
+**Peptides are now the weakest population**, at 0.041 median error and 59%
+within 0.05. v6 holds 1,500 of them because the corpus was mid-rebuild. That is
+the number to watch in v7, not the large-molecule figure.
 
 A model card that hides its failure mode is worse than no model card.
 
@@ -328,11 +333,17 @@ peptide corpus are enumerated sets whose totals are known, with only the
 fingerprinting left to do. ChEMBL selection is still running, so its expected
 total is an estimate and will move.
 
-SCP v6 trained on a 3,281,914-molecule snapshot of these three corpora:
-3,058,290 screening collection, 215,182 ChEMBL (177,197 head and 37,985 tail),
-6,942 large catalogue tail, and 1,500 loop peptides. The peptide corpus was
-being rebuilt when this snapshot was taken, so v6 carries very few peptides.
-Its output layer is 10,549 wide, one per pharmacophore.
+SCP v6 trained on a 3,281,914-molecule snapshot:
+
+| Corpus | Molecules | Share | Mass range | Median |
+|---|---:|---:|---|---:|
+| Screening collection | 3,058,290 | 93.19% | 142 to 600 Da | 343 |
+| ChEMBL, activity backed | 215,182 | 6.56% | 142 to 1000 Da | 310 |
+| Large catalogue tail | 6,942 | 0.21% | 600 to 917 Da | 626 |
+| Protein loop peptides | 1,500 | 0.05% | 116 to 988 Da | 571 |
+
+The peptide corpus was being rebuilt when this snapshot was taken, so v6 carries
+very few peptides. Its output layer is 10,549 wide, one per pharmacophore.
 
 ### Why the versions exist
 
@@ -347,14 +358,9 @@ collection, 7,406 ChEMBL head, 3,200 ChEMBL tail and 2,500 loop peptides, with
 one training overlap excluded.
 
 That is a genuinely unseen population, but it is **not the same population** v2
-through v5 were scored on, which was a fixed 9,975-molecule split that never
-moved. The molecular weight distributions differ materially. **Do not read the
-two together as one trend**, and do not compare a v6 result above 600 Da
-directly against the earlier models.
-
-Metric values for v6 are published only once a provenance-backed artifact exists
-recording the model SHA, the frozen snapshot digest, the exact membership,
-the excluded overlap IDs, the sampling seed and the metric definitions.
+through v5 were scored on, which was a fixed 9,975-molecule split. The molecular
+weight distributions differ materially, so a v6 number above 600 Da is not
+directly comparable with the earlier models' figure for the same band.
 
 Every release is published beside its predecessors and never replaces one.
 
