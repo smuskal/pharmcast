@@ -85,9 +85,9 @@ def pharmsim(a, b):
     """Compare two fingerprints and show the working.
 
     -> dict with the coefficient, the three set sizes, and the actual bit
-    positions of the shared and exclusive sets in packed order. Positions are
-    what you feed to `native_index` if you need `pfpall`'s own pharmacophore
-    numbering.
+    **pharmacophore numbers** of the shared and exclusive sets. These are
+    pharmacophore numbers already, not packed positions, so do not put them
+    through `native_index`.
     """
     ba, bb = unpack(a), unpack(b)
     shared = ba & bb

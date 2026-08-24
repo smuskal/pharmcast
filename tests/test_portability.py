@@ -13,18 +13,22 @@ from pharmcast import pharmtan, pharmtan_matrix
 from pharmcast import similarity as S
 
 
-def test_packing_is_little_endian_regardless_of_host():
-    """`pack` must produce the same integers on any machine.
+def test_packing_matches_pfpall_and_is_host_independent():
+    """`pack` must produce the same integers pfpall would, on any machine.
 
-    Bit 0 set means the low bit of the first byte, which in little-endian word
-    order is the low bit of word 0 -- value 1, never 0x01000000.
+    pfpkey.c line 817 is the authority:
+
+        fingerprint[tempi/32] |= (1 << 31-tempi%32);
+
+    so pharmacophore 0 is the TOP bit of word 0, and pharmacophore 31 is the
+    low bit of word 0. The word values must not depend on host endianness.
     """
     b = np.zeros(B.N_PHARM, dtype=bool)
     b[0] = True
-    assert B.pack(b)[0] == 1
+    assert B.pack(b)[0] == 1 << 31
     b[:] = False
     b[31] = True
-    assert B.pack(b)[0] == 1 << 31
+    assert B.pack(b)[0] == 1
 
 
 def test_word_dtype_is_explicitly_little_endian():
@@ -71,3 +75,25 @@ def test_no_absolute_developer_paths_in_shipped_code():
             body = open(os.path.join(src, fn)).read()
             assert "/Users/" not in body, fn
             assert "\\\\Users\\\\" not in body, fn
+
+
+def test_words_batch_returns_330_words_without_a_model():
+    """Guards the scatter in `words_batch` with no checkpoint on disk.
+
+    N_PHARM is not a multiple of 32, so packing pharmacophore-ordered bits
+    directly gives 1,319 bytes, which cannot be viewed as uint32. This is the
+    exact failure that shipped once.
+    """
+    import numpy as np
+
+    from pharmcast import bits as B
+    from pharmcast.model import N_BITS, PACK_POS
+
+    pred = np.zeros((3, B.N_PHARM), dtype=bool)
+    pred[:, [0, 10529, 10531, 10548]] = True
+    full = np.zeros((pred.shape[0], N_BITS), dtype=bool)
+    full[:, PACK_POS] = pred
+    words = np.packbits(full, axis=1, bitorder="little").view("<u4")
+    assert words.shape == (3, 330)
+    for row in words:
+        assert list(B.set_bits([int(v) for v in row])) == [0, 10529, 10531, 10548]

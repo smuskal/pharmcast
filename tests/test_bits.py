@@ -19,9 +19,21 @@ def test_pack_returns_330_words():
     assert all(v == 0 for v in w)
 
 
-def test_padding_slots_cannot_be_set():
-    b = np.ones(B.N_BITS, dtype=bool)
-    assert B.popcount(B.pack(b)) == B.N_PHARM
+def test_every_pharmacophore_can_be_set_and_nothing_else():
+    """An all-ones fingerprint sets exactly N_PHARM bits, and none of them land
+    in the eleven packed positions that carry no pharmacophore."""
+    w = B.pack(np.ones(B.N_PHARM, dtype=bool))
+    assert B.popcount(w) == B.N_PHARM
+    raw = np.unpackbits(np.asarray(w, dtype="<u4").view(np.uint8),
+                        bitorder="little")
+    assert raw[10528:10539].sum() == 0
+
+
+def test_pack_refuses_a_packed_width_array():
+    """A 10,560-long array is word slots, not a fingerprint. Silently clamping
+    it is how the original defect stayed invisible; it must raise instead."""
+    with pytest.raises(ValueError):
+        B.pack(np.ones(B.N_BITS, dtype=bool))
 
 
 def test_native_index_is_its_own_inverse():

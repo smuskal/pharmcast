@@ -34,8 +34,17 @@ from .features import featurize, valid_mask
 from .net import Net
 
 N_INTS = 330                 # 32-bit words per fingerprint
-N_BITS = N_INTS * 32         # 10,560 slots
-N_PHARM = 10549              # real pharmacophores; the rest is padding
+N_BITS = N_INTS * 32         # packed word slots, storage only
+N_PHARM = 10549              # the fingerprint width
+
+# pfpkey.c stores pharmacophore i with fingerprint[i/32] |= 1 << (31 - i%32),
+# so within each word the pharmacophores run from the most significant bit
+# down. Unpacking a little endian word LSB first reverses them inside the word,
+# which means the 11 positions carrying no pharmacophore are 10528 to 10538,
+# not the top 11. PACK_POS gives the packed position of each pharmacophore.
+_J = np.arange(N_PHARM)
+PACK_POS = ((_J // 32) * 32 + 31 - (_J % 32)).astype(np.int64)
+
 FORMAT_VERSION = "v1.6"      # the version token written into a .pfp record
 
 
@@ -182,7 +191,7 @@ class PharmCast:
 
     # ------------------------------------------------------------- prediction
     def _bits(self, smiles):
-        """-> bool array [n, N_BITS] in the training bit order."""
+        """-> bool array [n, N_PHARM], pharmacophore j at column j."""
         x = featurize(list(smiles), self.features)
         x -= self.mean
         x /= self.std
@@ -191,7 +200,12 @@ class PharmCast:
             for i in range(0, x.shape[0], 512):
                 p = torch.sigmoid(self.model(torch.from_numpy(x[i:i + 512])))
                 out.append(p.numpy() >= 0.5)
-        return np.vstack(out) if out else np.zeros((0, N_BITS), dtype=bool)
+        # The fingerprint is N_PHARM pharmacophores. A checkpoint whose output
+        # layer was sized to the packed word count carries columns past that;
+        # they are not pharmacophores and never leave this method.
+        if out:
+            return np.vstack(out)[:, PACK_POS]
+        return np.zeros((0, N_PHARM), dtype=bool)
 
     def words_batch(self, smiles):
         """-> list of 330-integer lists, native representation.
@@ -207,9 +221,15 @@ class PharmCast:
         real record: unpack, repack, bytes identical.
         """
         smiles = list(smiles)
-        bits = self._bits(smiles)
-        bits[:, N_PHARM:] = False          # padding slots are never real
-        packed = np.packbits(bits, axis=1, bitorder="little")
+        bits = self._bits(smiles)                      # [n, N_PHARM], pharmacophore j at column j
+        # Scatter back into the packed word layout. N_PHARM is not a multiple
+        # of 32, so packing the pharmacophore-ordered array directly yields
+        # 1,319 bytes, which is not divisible by 4 and cannot be viewed as
+        # uint32 -- and even if the width worked, the bit order inside each
+        # word would be reversed. The scatter is the only correct route.
+        full = np.zeros((bits.shape[0], N_BITS), dtype=bool)
+        full[:, PACK_POS] = bits
+        packed = np.packbits(full, axis=1, bitorder="little")
         words = packed.view("<u4")      # explicit LE; see bits.py on byte order
         return [[int(v) for v in row] for row in words]
 

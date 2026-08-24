@@ -1,73 +1,101 @@
 """Bit-level view of a pharmacophore fingerprint.
 
-A fingerprint is carried as 330 unsigned 32-bit words -- 10,560 slots, of which
-the first 10,549 are real pharmacophores and the remainder is padding that is
-never set. These helpers expand that packing into the 0/1 form people actually
-want to look at, and back again.
+**A fingerprint is 10,549 pharmacophores.** It is *stored* in 330 unsigned
+32-bit words, which is 10,560 bit slots, so eleven slots carry nothing. 10,560
+is a storage count and is never a fingerprint width.
 
-THE BIT CONVENTION, which has caused confusion and must not be "fixed".
+`unpack` returns one entry per pharmacophore, with **pharmacophore j at index
+j**, so a set bit is traceable to a specific typed triangle. `pack` is its exact
+inverse.
 
-There are two orderings in play and they are both correct in their own frame:
+THE ORDERING RULE, which is what makes this non-obvious.
 
-  native     `pfpall` places pharmacophore *i* at word ``i // 32``, bit
-             ``31 - (i % 32)`` counting from the least significant end.
-  packed     this library unpacks the same words little-endian without a
-             byteswap, which lands pharmacophore *i* at a different position.
+`pfpkey.c` stores pharmacophore *i* as::
 
-Everything here is self-consistent because the same convention is used on both
-sides: `unpack` is the exact inverse of `pack`, and `pack` reproduces the
-native word representation byte for byte. Only when you need to talk about a
-specific *pharmacophore number* -- to line a bit up against `pfpall`'s own
-numbering -- does the difference matter, and `native_index` converts.
+    fingerprint[i / 32] |= 1 << (31 - i % 32);
 
-Do not change one side to match the other. The round trip is verified by test.
+so within each word the pharmacophores run from the most significant bit *down*.
+Unpacking a little-endian word LSB-first reverses them inside the word, putting
+pharmacophore *i* at packed position ``(i//32)*32 + 31 - (i%32)``. Word 329
+therefore carries pharmacophores 10528 to 10548 in its **top** 21 bits, which
+means:
 
-Word views use the explicit `'<u4'` dtype rather than `np.uint32` so the packing
-does not depend on the host's byte order. Every mainstream platform -- x86_64,
-Apple Silicon, aarch64 -- is little-endian, which is precisely why an endianness
-bug here would stay invisible until the one machine where it mattered.
+* the eleven positions carrying no pharmacophore are **10528 to 10538**, not the
+  last eleven;
+* packed positions **10539 to 10559 are real pharmacophores**.
+
+**A ``[:10549]`` slice is therefore wrong**: it keeps the eleven meaningless
+positions and discards eleven real pharmacophores. Real records do set them --
+pharmacophores 10529 and 10531 occur in the ChEMBL corpus. `PACK_POS` is the
+mapping and must be used instead of any slice. Pinned by
+`tests/test_fingerprint_width.py`; see `PHARMCAST_FINGERPRINT_WIDTH.md`.
 """
 from __future__ import annotations
 
 import numpy as np
 
 N_INTS = 330
-N_BITS = N_INTS * 32     # 10,560 slots
-N_PHARM = 10549          # real pharmacophores; the rest is padding
+N_BITS = N_INTS * 32     # packed word slots, storage only
+N_PHARM = 10549          # the fingerprint width
+
+# pfpkey.c stores pharmacophore i with fingerprint[i/32] |= 1 << (31 - i%32),
+# so within each word the pharmacophores run from the most significant bit
+# down. Unpacking a little endian word LSB first reverses them inside the word,
+# which means the 11 positions carrying no pharmacophore are 10528 to 10538,
+# not the top 11. PACK_POS gives the packed position of each pharmacophore.
+_J = np.arange(N_PHARM)
+PACK_POS = ((_J // 32) * 32 + 31 - (_J % 32)).astype(np.int64)
+
 
 
 def unpack(words):
-    """330 integers -> bool array of N_PHARM pharmacophore bits (packed order)."""
+    """330 integers -> bool array of N_PHARM bits, pharmacophore j at index j."""
     w = np.asarray(words, dtype="<u4")
     return np.unpackbits(w.view(np.uint8),
-                         bitorder="little")[:N_PHARM].astype(bool)
+                         bitorder="little")[PACK_POS].astype(bool)
 
 
 def pack(bits):
-    """Bool array of up to N_BITS bits -> list of 330 integers.
+    """Bool array of up to N_PHARM pharmacophore bits -> list of 330 integers.
 
-    The exact inverse of `unpack`. Padding slots are forced off, so a caller
-    cannot accidentally set a bit that no pharmacophore corresponds to.
+    The exact inverse of `unpack`. Only positions that carry a pharmacophore
+    are ever written, so a caller cannot set a bit that means nothing.
     """
+    a = np.asarray(bits, dtype=bool).ravel()
+    if a.size > N_PHARM:
+        raise ValueError(
+            "expected at most %d pharmacophore bits, got %d. A 10,560-long "
+            "array is packed word slots, not a fingerprint; map it through "
+            "PACK_POS first." % (N_PHARM, a.size))
+    v = np.zeros(N_PHARM, dtype=bool)
+    v[:a.size] = a
     b = np.zeros(N_BITS, dtype=bool)
-    b[:len(bits)] = np.asarray(bits, dtype=bool)[:N_BITS]
-    b[N_PHARM:] = False
+    b[PACK_POS] = v
     return [int(v) for v in np.packbits(b, bitorder="little").view("<u4")]
 
 
 def native_index(i):
-    """Convert between packed position and `pfpall` pharmacophore number.
+    """Convert between a packed position and a pharmacophore number.
 
     ``i -> 32 * (i // 32) + 31 - (i % 32)``: the word is unchanged and the
-    offset within the word is mirrored. The mapping is its own inverse, so the
-    one function converts in both directions.
+    offset within the word is mirrored. The mapping is its own inverse, so one
+    function converts in both directions.
+
+    **You almost certainly do not need this.** `unpack` and `set_bits` already
+    return pharmacophore numbers, so applying `native_index` to their output
+    mirrors a second time and produces nonsense. It is exported only for code
+    that has a raw packed position in hand.
     """
     i = np.asarray(i)
     return 32 * (i // 32) + 31 - (i % 32)
 
 
 def set_bits(words):
-    """-> sorted array of the packed positions that are on."""
+    """-> sorted array of the PHARMACOPHORE NUMBERS that are on.
+
+    Not packed positions. Column j is pharmacophore j, which is what makes a
+    set bit traceable back to a specific typed triangle.
+    """
     return np.flatnonzero(unpack(words))
 
 

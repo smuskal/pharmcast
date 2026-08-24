@@ -2,9 +2,13 @@
 
 ## On the wire
 
-A fingerprint is **330 unsigned 32-bit words**, so 10,560 slots, of which the
-first **10,549** are real pharmacophores and the remainder is padding that is
-never set.
+**A fingerprint is 10,549 pharmacophores.** It is *stored* in **330 unsigned
+32-bit words**, which is 10,560 bit slots, so eleven slots carry nothing. 10,560
+is a storage count and is never a fingerprint width.
+
+The eleven empty slots are **not** the last eleven. See
+[FINGERPRINT_WIDTH.md](FINGERPRINT_WIDTH.md) for the ordering rule and the
+verification commands; getting this wrong silently deletes real pharmacophores.
 
 A native `.pfp` record is whitespace-delimited, one molecule per line:
 
@@ -49,8 +53,14 @@ Two orderings are in play and both are correct in their own frame:
 
 | | Placement of pharmacophore *i* |
 |---|---|
-| **native** | word `i // 32`, bit `31 - (i % 32)` from the least significant end |
-| **packed** | this library unpacks the same words little-endian with no byteswap |
+| **pharmacophore number** | what `unpack`, `set_bits` and `pharmsim` return: column *j* is pharmacophore *j* |
+| **packed position** | where it sits in the word array: `(i//32)*32 + 31 - (i%32)` |
+
+`pfpkey.c` stores pharmacophore *i* as `fingerprint[i/32] |= 1 << (31 - i%32)`,
+so within a word the pharmacophores run from the most significant bit **down**.
+Unpacking little-endian LSB-first reverses them inside each word, which puts the
+eleven empty slots at packed **10528-10538** and real pharmacophores at packed
+**10539-10559**. `PACK_POS` is the mapping; **never slice `[:10549]`**.
 
 Everything is self-consistent because the same convention is used on both sides:
 `pack` is the exact inverse of `unpack`, and `pack` reproduces the native word

@@ -12,7 +12,7 @@ never been the fingerprint. Of the **2.48 s** needed to fingerprint one
 catalogue molecule over 100 conformers, **2.44 s is conformer generation** and
 only 0.043 s is the fingerprint itself.
 
-PharmCast reads a SMILES and predicts all 10,560 bits directly. It removes the
+PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It removes the
 conformational stage rather than accelerating it, which is why the speed-up is
 of a different order to what optimisation normally buys: **a complete comparison
 of two molecules, from structure alone, takes 0.034 ms against 5.0 s.**
@@ -180,7 +180,7 @@ pfp2bits FILE.pfp --format positions --json
 `fp` is the one that matters for throughput: it batches, and PharmCast earns its
 speed in a batch rather than one molecule at a time.
 
-Each fingerprint is **330 unsigned 32-bit words** in the *native* format, the
+Each fingerprint is **10,549 pharmacophores**, stored as **330 unsigned 32-bit words** in the *native* format, the
 same words the reference calculation emits, in the same bit convention, so
 existing PharmSim tooling consumes PharmCast output unchanged.
 
