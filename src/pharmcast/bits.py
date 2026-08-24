@@ -25,7 +25,7 @@ means:
 * packed positions **10539 to 10559 are real pharmacophores**.
 
 **A ``[:10549]`` slice is therefore wrong**: it keeps the eleven meaningless
-positions and discards eleven real pharmacophores. Real records do set them --
+positions and discards eleven real pharmacophores. Real records do set them:
 pharmacophores 10529 and 10531 occur in the ChEMBL corpus. `PACK_POS` is the
 mapping and must be used instead of any slice. Pinned by
 `tests/test_fingerprint_width.py`; see `PHARMCAST_FINGERPRINT_WIDTH.md`.
