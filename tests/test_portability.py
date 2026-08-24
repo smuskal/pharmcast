@@ -65,16 +65,48 @@ def test_matrix_agrees_with_pairwise_under_the_fallback(monkeypatch):
             assert abs(fallback[i, j] - pharmtan(fps[i], fps[j])) < 1e-9
 
 
-def test_no_absolute_developer_paths_in_shipped_code():
-    """The working-tree copy hardcoded /Users/smuskal/...; the release must not."""
+def test_no_absolute_developer_paths_or_internal_names_anywhere_shipped():
+    """Nothing shipped may carry a developer path or an internal project name.
+
+    This used to scan src/pharmcast/*.py only. A docs/ file then shipped six
+    absolute home paths, the private conda environment name, the on-disk layout
+    of a licensed third party corpus, and the code name of an unannounced
+    internal program, straight into the public repository. The scan now covers
+    everything that ships, not only the modules.
+    """
     import os
-    src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                       "src", "pharmcast")
-    for fn in os.listdir(src):
-        if fn.endswith(".py"):
-            body = open(os.path.join(src, fn)).read()
-            assert "/Users/" not in body, fn
-            assert "\\\\Users\\\\" not in body, fn
+
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Anything an outsider can read after a clone or a pip install.
+    roots = ["src", "docs", "tests", "examples"]
+    files = [os.path.join(root, f)
+             for f in ("README.md", "NOTICE", "CITATION.cff", "pyproject.toml")]
+    for d in roots:
+        full = os.path.join(root, d)
+        if not os.path.isdir(full):
+            continue
+        for base, _dirs, names in os.walk(full):
+            if "__pycache__" in base:
+                continue
+            files += [os.path.join(base, n) for n in names
+                      if n.endswith((".py", ".md", ".txt", ".toml", ".cfg",
+                                     ".yml", ".yaml", ".rst"))]
+
+    banned = ["/Users/", "\\\\Users\\\\", "miniforge", "ai-steve",
+              "chip-sandbox", "enamine-screening", "pfp-libraries",
+              "pfp-surrogate"]
+    bad = []
+    for path in files:
+        if not os.path.exists(path):
+            continue
+        rel = os.path.relpath(path, root)
+        if rel == os.path.join("tests", "test_portability.py"):
+            continue                       # this file names the patterns
+        body = open(path, encoding="utf-8", errors="replace").read()
+        for token in banned:
+            if token in body:
+                bad.append("%s carries %r" % (rel, token))
+    assert not bad, "internal detail in shipped files:\n" + "\n".join(bad)
 
 
 def test_words_batch_returns_330_words_without_a_model():
