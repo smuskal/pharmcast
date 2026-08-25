@@ -34,6 +34,8 @@ h3 { font-size: 12.6pt; margin: 4.5mm 0 1.5mm; font-weight: bold;
      font-style: italic; text-align: left; page-break-after: avoid; }
 p { margin: 0 0 2.2mm; orphans: 3; widows: 3; }
 .authors { font-size: 13pt; margin: 0 0 1mm; text-align: left; }
+.pdflink { display: none; }
+@media screen { .pdflink { display: block; } }
 .affil { font-size: 11pt; color: #555; margin: 0 0 1.5mm; text-align: left;
          font-style: italic; }
 .meta { font-size: 10.4pt; color: #666; margin: 0 0 6mm; text-align: left; }
@@ -71,6 +73,7 @@ constitution alone</h1>
 <p class="authors">S. M. Muskal</p>
 <p class="affil">Eidogen-Sertanty, Inc.</p>
 <p class="meta">Technical report &middot; PharmCast</p>
+<p class="meta pdflink"><a href="https://pharmcast.ai/whitepaper/pharmcast-whitepaper.pdf">Download this paper as a PDF</a></p>
 <hr class="rule">
 
 <div class="abstract">
@@ -564,9 +567,9 @@ many survivors rather than a top handful should be carried into it.</p>
 <h2>5. Status of the training corpora</h2>
 <p>Both corpora are still being built, and the numbers in this report are a
 measurement of a moving object rather than of a finished one. At the time of
-writing, <b>68%</b> of the 4,612,044 compound screening
+writing, <b>67%</b> of the 4,617,292 compound screening
 collection has been fingerprinted by the conventional route, and
-<b>3%</b> of the protein loop corpus, 4,000 of
+<b>4%</b> of the protein loop corpus, 5,500 of
 133,136 distinct capped peptides. Fingerprinting continues on both.</p>
 <p>Every result here should therefore be read as a lower bound on what the
 approach supports rather than as its final performance, and this document is
