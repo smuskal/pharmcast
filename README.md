@@ -3,6 +3,7 @@
 **Predict a complete 3D pharmacophore fingerprint directly from a 2D structure.**
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![White paper](https://img.shields.io/badge/white%20paper-HTML%20%7C%20PDF-8a5a2b.svg)](docs/whitepaper.html)
 [![Site](https://img.shields.io/badge/site-pharmcast.ai-8a5a2b.svg)](https://pharmcast.ai)
 
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
@@ -460,6 +461,18 @@ Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No
 training corpus is redistributed here, only the trained parameters, and
 keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
 attribution those sources ask for.
+
+## White paper
+
+The full method description, with the corpus construction, the evaluation
+protocol and every figure, is in [`docs/whitepaper.html`](docs/whitepaper.html),
+with a [PDF](docs/whitepaper.pdf) alongside it. It is current on SCP v6.
+
+Note the evaluation protocol it describes: each version is scored on collection
+molecules fingerprinted *after* that version finished training, so populations
+are comparable in kind rather than identical in membership. **SCP v6 was trained
+with zero holdout and has no internal validation split**, and the white paper
+says so where it reports v6.
 
 ## Citation
 
