@@ -15,7 +15,7 @@ only 0.043 s is the fingerprint itself.
 PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It removes the
 conformational stage rather than accelerating it, which is why the speed-up is
 of a different order to what optimisation normally buys: **a complete comparison
-of two molecules, from structure alone, takes 0.034 ms against 5.0 s.**
+of two molecules, from structure alone, takes 0.011 ms against 2.48 s.**
 
 ---
 
@@ -26,9 +26,11 @@ measured distances. Enumerate every combination of feature type and distance
 range and you have a fixed vocabulary of triangles; each one is a bit, and a
 molecule sets the bit for every triangle it can form.
 
-*A figure for this section is being regenerated. The one previously here still
-rendered the packed word count as if it were the fingerprint width, so it has
-been withdrawn rather than republished.*
+![A three point pharmacophore: three typed features p1, p2, p3 joined by three measured distances, beside the seven feature types and six distance bins that enumerate 10,549 pharmacophores](assets/pharmacophore-bit.jpg)
+
+*What one bit is. A three point pharmacophore is three typed features and the
+three binned distances between them. Enumerating every triangle that satisfies
+the triangle inequality on the bin bounds gives 10,549 distinct pharmacophores.*
 
 Because the vocabulary is geometric rather than substructural, two molecules
 with nothing in common on paper score highly if they present their features in
@@ -54,7 +56,8 @@ entirely. Panel E is one real catalogue pair scored by PharmCast SCP v6: the
 reference calculation gives a pharmacophore Tanimoto of 0.383 and PharmCast
 predicts 0.364, against a two dimensional Morgan Tanimoto of 0.149. The network
 is 2,059 inputs, hidden layers of 1,024 and 512, and one output unit per
-pharmacophore, 10,549 in total, for 8,045,877 parameters.*
+pharmacophore, 10,549 in total, for 8,045,877 parameters. Batched, that is
+0.011 ms against 2.48 s, 225,455 times faster.*
 
 ---
 
