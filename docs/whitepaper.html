@@ -357,9 +357,9 @@ agreement.</figcaption>
 the model has learned a monotone function of two-dimensional similarity and is
 adding nothing three-dimensional. It has not. Across the held-out pairs, the
 Morgan similarity of a pair correlates with the reference pharmacophoric
-similarity of the same pair at only 0.24, and the best straight-line
+similarity of the same pair at only 0.26, and the best straight-line
 predictor of pharmacophoric similarity from Morgan similarity alone carries a
-median absolute error of 0.081, against PharmCast's 0.017.</p>
+median absolute error of 0.145, against PharmCast's 0.017.</p>
 <p>The decisive observation is that accuracy does not depend on how alike the two
 molecules look on paper (Table 2). Pairs that are essentially unrelated in two
 dimensions are predicted as accurately as pairs that share obvious features. That
@@ -374,10 +374,10 @@ Morgan similarity of the pair being compared.</caption>
 <thead><tr><th>Morgan similarity of the pair</th><th class="n">Pairs</th>
 <th class="n">Median error</th><th class="n">Correlation</th></tr></thead>
 <tbody>
-<tr><td>0.00 to 0.10</td><td class="n">7,261</td><td class="n">0.018</td><td class="n">0.958</td></tr>
-<tr><td>0.10 to 0.15</td><td class="n">15,055</td><td class="n">0.019</td><td class="n">0.963</td></tr>
-<tr><td>0.15 to 0.20</td><td class="n">6,288</td><td class="n">0.020</td><td class="n">0.964</td></tr>
-<tr><td>0.20 to 1.01</td><td class="n">1,396</td><td class="n">0.020</td><td class="n">0.965</td></tr>
+<tr><td>0.00 to 0.10</td><td class="n">42,002</td><td class="n">0.015</td><td class="n">0.966</td></tr>
+<tr><td>0.10 to 0.15</td><td class="n">80,748</td><td class="n">0.016</td><td class="n">0.970</td></tr>
+<tr><td>0.15 to 0.20</td><td class="n">33,574</td><td class="n">0.017</td><td class="n">0.970</td></tr>
+<tr><td>0.20 to 1.01</td><td class="n">7,554</td><td class="n">0.017</td><td class="n">0.973</td></tr>
 </tbody></table>
 
 <h3>3.3 Ranking and retrieval</h3>
