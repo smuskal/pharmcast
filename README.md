@@ -268,7 +268,7 @@ predicts.*
 | PharmCast SCP v5 | 2,888,503 | 46.6% | 0.018 | 0.964 | 0.919 |
 | **PharmCast SCP v6** | **3,281,914** | **53.0%** | **0.017** | **0.970** | **0.921** |
 | PharmCast SCP v7 | pending | pending | pending | pending | pending |
-| Corpus complete | 6,197,537 | 100% | pending | pending | pending |
+| Corpus complete | 6,200,170 | 100% | pending | pending | pending |
 
 ### It is not re-deriving 2D similarity
 
@@ -319,14 +319,20 @@ Where the three corpora stand today:
 
 | Corpus | Fingerprinted today | Expected total | Complete |
 |---|---:|---:|---:|
-| Screening collection | 2,970,000 | 4,620,000 | 64% |
-| ChEMBL | 150,000 | 1,450,000 † | 11% |
-| Loop peptides | 100,000 | 130,000 | 77% |
-| **All three** | **3,220,000** | **6,197,537** | **52%** |
+| Screening collection | 3,096,476 | 4,617,292 | 67.1% |
+| ChEMBL | 225,788 | 1,450,000 † | 15.6% |
+| Loop peptides | 4,000 | 132,878 | 3.0% |
+| **All three** | **3,326,264** | **6,200,170** | **53.6%** |
 
-![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 64%, ChEMBL 11%, loop peptides 77%, all three 52%](assets/corpus-progress.jpg)
+![Bar chart of each corpus, fingerprinted today against the expected total: screening collection 67.1%, ChEMBL 15.6%, loop peptides 3.0%, all three 53.6%](assets/corpus-progress.jpg)
 
-**The finished training set is expected to be 6,197,537 molecules**, roughly
+**The peptide bar is short because the corpus is being rebuilt, not because it
+shrank.** Loop peptides are being recomputed from scratch under content derived
+identifiers, so the store went to zero and is climbing again from 4,000. SCP v6
+was trained on 1,500 of them, which is why peptides are its weakest population.
+The expected total, 132,878, has not moved.
+
+**The finished training set is expected to be 6,200,170 molecules**, roughly
 twice the size of the corpus SCP v6 was trained on, and about half of it is
 fingerprinted today. The growth is not evenly distributed: the screening
 collection is most of the mass, while ChEMBL is the least complete and grows the
