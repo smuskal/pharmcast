@@ -3,7 +3,7 @@
 **Predict a complete 3D pharmacophore fingerprint directly from a 2D structure.**
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![White paper](https://img.shields.io/badge/white%20paper-HTML%20%7C%20PDF-8a5a2b.svg)](docs/whitepaper.html)
+[![White paper](https://img.shields.io/badge/white%20paper-read-8a5a2b.svg)](https://pharmcast.ai/whitepaper/)
 [![Site](https://img.shields.io/badge/site-pharmcast.ai-8a5a2b.svg)](https://pharmcast.ai)
 
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
@@ -465,8 +465,15 @@ attribution those sources ask for.
 ## White paper
 
 The full method description, with the corpus construction, the evaluation
-protocol and every figure, is in [`docs/whitepaper.html`](docs/whitepaper.html),
-with a [PDF](docs/whitepaper.pdf) alongside it. It is current on SCP v6.
+protocol and every figure, is current on SCP v6.
+
+**Read it at <https://pharmcast.ai/whitepaper/>**, or open
+[`docs/whitepaper.pdf`](docs/whitepaper.pdf), which GitHub renders inline.
+
+`docs/whitepaper.html` is the same document and is kept here so the repository
+is self-contained, but **GitHub shows HTML as source rather than rendering it**,
+so a browser is the wrong way to read that file. Download it, or use one of the
+two links above.
 
 Note the evaluation protocol it describes: each version is scored on collection
 molecules fingerprinted *after* that version finished training, so populations
