@@ -270,6 +270,18 @@ predicts.*
 | PharmCast SCP v7 | pending | pending | pending | pending | pending |
 | Corpus complete | 6,200,170 | 100% | pending | pending | pending |
 
+### The large-molecule gap is closing, and not for the obvious reason
+
+On the size-controlled comparison, ranking accuracy on large compounds goes
+**74.6% at SCP v5 to 81.1% at SCP v6**, closing most of a gap that had been flat
+since v2.
+
+The obvious explanation is wrong. **v6 holds a smaller share of heavy molecules
+than v5 did**, 1.39% above 600 Da against 2.19%. The gain came from the breadth
+of activity-backed chemistry ChEMBL brought, not from feeding the model more
+heavy molecules. That is worth knowing before anyone plans a corpus on the
+assumption that the fix for large compounds is more large compounds.
+
 ### It is not re-deriving 2D similarity
 
 ![The same pairs coloured by 2D Morgan similarity, with Pearson essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
