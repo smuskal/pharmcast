@@ -66,9 +66,9 @@ constitution alone</h1>
 molecule can present in three dimensions, and they are among the most useful
 descriptors available for scaffold hopping, focused library design and
 similarity searching. Their cost is dominated not by the fingerprint but by the
-conformer ensemble it requires: of the 2.48 s needed to fingerprint one
-catalogue molecule over 100 conformers, 2.44 s is conformer generation and
-only 0.043 s is the fingerprint itself. We describe <i>PharmCast</i>, a
+conformer ensemble it requires: of the 2.86 s needed to fingerprint one
+catalogue molecule over 100 conformers, 2.82 s is conformer generation and
+only 0.039 s is the fingerprint itself. We describe <i>PharmCast</i>, a
 feedforward model that predicts the complete 10,549-bit ensemble fingerprint
 directly from the molecule's two-dimensional structure, with no conformer
 generation at any stage.
@@ -80,7 +80,7 @@ pharmacophoric similarity between two molecules, it agrees with the reference
 calculation at Pearson 0.969 with a median absolute error of 0.017,
 and it orders candidate pairs correctly 92.7% of the time overall and
 99.77% when the true difference exceeds 0.10. A complete comparison of two
-molecules from structure alone takes 0.034 ms against 5.0 s for the
+molecules from structure alone takes 0.584 ms against 5.7 s for the
 conventional route. We report where the approximation holds, where it degrades,
 and a measurement of the reference calculation's own reproducibility that bounds
 what any surrogate could achieve.</p>
@@ -130,9 +130,9 @@ the same bit is set in both. Reproduced from reference&nbsp;1.</figcaption>
 </figure>
 
 <p>The ensemble is where the cost lives. Measured over 100-conformer builds,
-conformer generation and optimisation account for 2.44 s of the
-2.48 s total, while the fingerprint calculation itself accounts for
-0.043 s. The descriptor is therefore roughly fifty times cheaper than the
+conformer generation and optimisation account for 2.82 s of the
+2.86 s total, while the fingerprint calculation itself accounts for
+0.039 s. The descriptor is therefore roughly fifty times cheaper than the
 geometry it is computed on. That imbalance is what motivates a surrogate: if
 the ensemble fingerprint can be predicted from constitution, the entire
 conformational stage can be skipped for any application that consumes
@@ -397,10 +397,10 @@ over 2,999,838 comparisons drawn from the held-out set.</caption>
 <tr><td>greater than 0.20</td><td class="n">719,525</td><td class="n">99.99%</td></tr>
 </tbody></table>
 
-<p>In a retrieval setting over 101,444 candidates and 30,000 queries, the
-true nearest neighbour has a median rank of 5 under the surrogate, and
-appears within the surrogate's top 100 for 87.5% of queries and within
-its top 500 for 95.9% (Figure 6). This is the operationally relevant
+<p>In a retrieval setting over 32,202 candidates and 30,000 queries, the
+true nearest neighbour has a median rank of 3 under the surrogate, and
+appears within the surrogate's top 100 for 95.3% of queries and within
+its top 500 for 99.2% (Figure 6). This is the operationally relevant
 behaviour: the surrogate is used to select a shortlist that the reference
 calculation then adjudicates.</p>
 
@@ -423,17 +423,17 @@ different order to what is normally achievable by optimisation.</p>
 two molecules starting from structure alone.</caption>
 <thead><tr><th>Stage</th><th class="n">Seconds per molecule</th></tr></thead>
 <tbody>
-<tr><td>Conformer generation and optimisation, 100 conformers</td><td class="n">2.44</td></tr>
-<tr><td>Reference fingerprint over the ensemble</td><td class="n">0.043</td></tr>
-<tr><td><b>Conventional route, total</b></td><td class="n"><b>2.48</b></td></tr>
-<tr><td>PharmCast, one molecule at a time</td><td class="n">0.000357</td></tr>
-<tr><td>PharmCast, batched</td><td class="n">1.07e-05</td></tr>
+<tr><td>Conformer generation and optimisation, 100 conformers</td><td class="n">2.82</td></tr>
+<tr><td>Reference fingerprint over the ensemble</td><td class="n">0.039</td></tr>
+<tr><td><b>Conventional route, total</b></td><td class="n"><b>2.86</b></td></tr>
+<tr><td>PharmCast, one molecule at a time</td><td class="n">0.000302</td></tr>
+<tr><td>PharmCast, batched</td><td class="n">2.88e-04</td></tr>
 </tbody></table>
 
 <p>Batched inference sustains 78,223 molecules per second on a single machine,
-a speedup of 6,942-fold per molecule and 231,694-fold batched. A
+a speedup of 9,467-fold per molecule and 9,925-fold batched. A
 complete pharmacophoric comparison of two molecules, from two line notations to
-one similarity value, takes 0.034 ms against 5.0 s conventionally.</p>
+one similarity value, takes 0.584 ms against 5.7 s conventionally.</p>
 
 <h3>3.5 Behaviour across chemistries</h3>
 <p>Catalogue chemistry is not the only domain of interest. Table 5 reports the

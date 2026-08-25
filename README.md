@@ -9,14 +9,14 @@
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
 features a molecule can present, so two compounds from completely different
 scaffolds can be compared on the thing a protein actually reads. Its cost has
-never been the fingerprint. Of the **2.48 s** needed to fingerprint one
+never been the fingerprint. Of the **2.86 s** needed to fingerprint one
 catalogue molecule over 100 conformers, **2.44 s is conformer generation** and
 only 0.043 s is the fingerprint itself.
 
 PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It removes the
 conformational stage rather than accelerating it, which is why the speed-up is
 of a different order to what optimisation normally buys: **a complete comparison
-of two molecules, from structure alone, takes 0.011 ms against 2.48 s.**
+of two molecules, from structure alone, takes 0.584 ms against 5.7 s.**
 
 ---
 
@@ -58,7 +58,9 @@ reference calculation gives a pharmacophore Tanimoto of 0.383 and PharmCast
 predicts 0.364, against a two dimensional Morgan Tanimoto of 0.149. The network
 is 2,059 inputs, hidden layers of 1,024 and 512, and one output unit per
 pharmacophore, 10,549 in total, for 8,045,877 parameters. Batched, that is
-0.011 ms against 2.48 s, 225,455 times faster.*
+0.584 ms against 5.7 s, which is 9,925-fold batched. That figure is end to
+end and includes featurisation, which is roughly 27 times larger than the
+forward pass and cannot be batched away.*
 
 ---
 
