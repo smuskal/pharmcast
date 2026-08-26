@@ -1,0 +1,7 @@
+# Build artifacts. Sources are committed; binaries are not.
+pfp2bits
+pharmstat
+pfp2bits_arm64
+pfp2bits_x86_64
+pharmstat_arm64
+pharmstat_x86_64

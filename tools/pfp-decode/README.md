@@ -72,17 +72,36 @@ Feature codes are taken from the pharmacophore definition files
 | `pfp2bits` | `.pfp` to a 10,549 character `0`/`1` string |
 | `pharmstat` | text summary plus the decoded hit list |
 | `pfp_report.py` | HTML report: stats, feature triplets, distance bins, hit list |
+| `Makefile`, `run_tests.py` | build and the bit-order regression suite |
 
-## Build first
+## Build and test
 
-No binaries are shipped. Compile the two C tools for your own machine:
+No binaries are shipped. There is a Makefile:
+
+```bash
+make            # build pfp2bits and pharmstat for this machine
+make all-archs  # also build arm64 and x86_64 (macOS cross-compile)
+make test       # run the bit-order regression suite
+make clean
+```
+
+`make test` pins the contract that matters. Over `examples/CHEMBL163631.pfp` it
+asserts the bit string is exactly 10,549 characters with exactly 173 set, that
+`pfp_report.py --bits` is byte identical to `pfp2bits`, that `pharmstat` reports
+1 record and a 173.0 average with 173 hit rows, and that both copy blocks in the
+committed HTML unescape to their exact sources. With `make all-archs` first it
+also proves arm64 and x86_64 agree byte for byte; otherwise it says it skipped
+that, rather than passing quietly.
+
+Bit order is the whole contract — a silent change corrupts every downstream
+consumer and nothing else would notice.
+
+Building by hand, if you prefer:
 
 ```bash
 clang -std=gnu89 -O2 -w -o pfp2bits  pfp2bits.c  -lm
 clang -std=gnu89 -O2 -w -o pharmstat pharmstat.c -lm
-```
-
-Add `-arch arm64` or `-arch x86_64` to cross-compile. The sources are K&R era
+``` The sources are K&R era
 and declare `main` without a return type, hence `-std=gnu89 -w`. `pfp_report.py`
 needs no build — Python 3, standard library only.
 
