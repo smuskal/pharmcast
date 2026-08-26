@@ -20,15 +20,19 @@ no ability to generate a fingerprint.
 The intended workflow is that fingerprints come from PharmCast output, and these
 tools make that output readable.
 
-## Try it now
+## Try it now — the same report, in the browser
 
-**[pharmcast.ai/compare.html](https://pharmcast.ai/compare.html)** — the live
-demo. Paste two structures, get their PharmSim similarity. No install.
+**[pharmcast.ai/fingerprint.html](https://pharmcast.ai/fingerprint.html)** does
+in a browser what `pfp_report.py` does locally. Draw or paste one structure and
+it returns the complete predicted fingerprint: which of the 10,549 pharmacophores
+are set, each one named as a feature triplet, and the fingerprint itself ready to
+copy in both packed 32-bit and `0`/`1` form. No install, no email.
 
-Note what it does and does not give you: it returns a **similarity score**, not a
-`.pfp` file. There is currently no web endpoint that hands back a fingerprint, so
-the input to these decoders has to come from a PharmCast run. `examples/` holds a
-real one to work with in the meantime.
+Use that to see the output; use these tools when you have `.pfp` files of your
+own to decode in bulk, offline, or in a pipeline.
+
+Also live: **[compare two molecules](https://pharmcast.ai/compare.html)** for
+PharmSim similarity between two structures.
 
 
 Turns a `.pfp` fingerprint into something a person can read.
