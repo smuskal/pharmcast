@@ -5,6 +5,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![White paper](https://img.shields.io/badge/white%20paper-read-8a5a2b.svg)](https://pharmcast.ai/whitepaper/)
 [![Site](https://img.shields.io/badge/site-pharmcast.ai-8a5a2b.svg)](https://pharmcast.ai)
+[![Try it now](https://img.shields.io/badge/try%20it%20now-compare%20two%20molecules-2d7d46.svg)](https://pharmcast.ai/compare.html)
 
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
 features a molecule can present, so two compounds from completely different
@@ -17,6 +18,11 @@ PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It rem
 conformational stage rather than accelerating it, which is why the speed-up is
 of a different order to what optimisation normally buys: **a complete comparison
 of two molecules, from structure alone, takes 0.584 ms against 5.7 s.**
+
+**[Try it now](https://pharmcast.ai/compare.html)** — paste two structures and get
+their PharmSim similarity, no install required. It returns the score, not the
+fingerprint itself; to decode a `.pfp` you already have, see
+[`tools/pfp-decode`](tools/pfp-decode).
 
 ---
 

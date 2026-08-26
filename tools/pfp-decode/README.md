@@ -20,6 +20,16 @@ no ability to generate a fingerprint.
 The intended workflow is that fingerprints come from PharmCast output, and these
 tools make that output readable.
 
+## Try it now
+
+**[pharmcast.ai/compare.html](https://pharmcast.ai/compare.html)** — the live
+demo. Paste two structures, get their PharmSim similarity. No install.
+
+Note what it does and does not give you: it returns a **similarity score**, not a
+`.pfp` file. There is currently no web endpoint that hands back a fingerprint, so
+the input to these decoders has to come from a PharmCast run. `examples/` holds a
+real one to work with in the meantime.
+
 
 Turns a `.pfp` fingerprint into something a person can read.
 
