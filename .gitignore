@@ -14,6 +14,8 @@ venv/
 # Corpus data is never committed — only the trained parameters are released.
 *.pfp
 *.pfp.gz
+# ...but keep the small decoder example, which is useless without its input
+!tools/pfp-decode/examples/*.pfp
 *.sdf
 *.smi
 # ...except the small example inputs, which the worked scripts need
