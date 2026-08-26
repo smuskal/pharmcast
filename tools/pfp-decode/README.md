@@ -59,16 +59,88 @@ Feature codes are taken from the pharmacophore definition files
 
 | Tool | Purpose |
 |---|---|
-| `pfp2bits_arm64`, `pfp2bits_x86_64` | `.pfp` to a 10,549 character `0`/`1` string |
-| `pharmstat_arm64`, `pharmstat_x86_64` | text summary plus the decoded hit list |
+| `pfp2bits` | `.pfp` to a 10,549 character `0`/`1` string |
+| `pharmstat` | text summary plus the decoded hit list |
 | `pfp_report.py` | HTML report: stats, feature triplets, distance bins, hit list |
 
+## Build first
+
+No binaries are shipped. Compile the two C tools for your own machine:
+
 ```bash
-./pfp2bits_arm64 molecules.pfp > molecules.bits
-./pharmstat_arm64 molecules.pfp pharm10549.list
-python3 pfp_report.py molecules.pfp -o report.html
+clang -std=gnu89 -O2 -w -o pfp2bits  pfp2bits.c  -lm
+clang -std=gnu89 -O2 -w -o pharmstat pharmstat.c -lm
+```
+
+Add `-arch arm64` or `-arch x86_64` to cross-compile. The sources are K&R era
+and declare `main` without a return type, hence `-std=gnu89 -w`. `pfp_report.py`
+needs no build — Python 3, standard library only.
+
+## Worked example
+
+Everything below runs against `examples/CHEMBL163631.pfp`, one molecule, and
+every output file it produces is committed next to it so you can diff.
+
+### 1. `pfp2bits` — the raw bit string
+
+```bash
+./pfp2bits examples/CHEMBL163631.pfp > CHEMBL163631.bits
+```
+
+Writes `<name> <10549 characters of 0/1>`. Progress goes to stderr
+(`CHEMBL163631 numbits: 173`), so redirecting stdout keeps the data clean.
+Committed as `examples/CHEMBL163631.bits` — 173 bits set.
+
+### 2. `pharmstat` — summary and decoded hit list
+
+```bash
+./pharmstat examples/CHEMBL163631.pfp pharm10549.list
+```
+
+```
+     1 = number of bitstrings processed
+ 173.0 = average number of pharmacophores hit per molecule
+   1.6 = percentage of pharmacophores hit at least once (out of 10549)
+
+Pharmacophore hit list:
+    ...
+ 3725 | 4.5-7 | 4.5-7 |  7-10 | H | H | X |
+ 3746 | 4.5-7 | 4.5-7 |  7-10 | H | R | X |
+```
+
+Each row is `bit index | d1 | d2 | d3 | p1 | p2 | p3` — the three edge lengths
+of the triangle, then the three features at its corners. The row above says:
+bit 3746 is an aromatic ring and two hydrophobes at 4.5-7, 4.5-7 and 7-10 A.
+
+The second argument is optional; `pharmstat` also accepts `$PHARM_LIST` or a
+`pharm10549.list` in the working directory. Full output is committed as
+`examples/CHEMBL163631_pharmstat.txt`.
+
+### 3. `pfp_report.py` — the HTML report
+
+```bash
+python3 pfp_report.py examples/CHEMBL163631.pfp -o report.html
+```
+
+The readable one. Same information as `pharmstat` plus feature-triplet and
+distance-bin rollups, a per-molecule table, and a copyable packed row. Committed
+as `examples/CHEMBL163631_report.html`.
+
+**GitHub will not render it.** Viewing an `.html` blob on github.com shows the
+source, not the page — GitHub never executes repository HTML. To see it:
+
+```bash
+open examples/CHEMBL163631_report.html     # macOS; or just double-click it
+```
+
+Cloning and opening locally is the reliable route. GitHub Pages would render it,
+but only once this repository is public.
+
+Other forms:
+
+```bash
 python3 pfp_report.py chunk_06663.pfp.gz --limit 50 -o report.html
-python3 pfp_report.py molecules.pfp --bits          # same output as pfp2bits
+python3 pfp_report.py examples/CHEMBL163631.pfp --bits    # identical to pfp2bits
 ```
 
 `pfp_report.py` reads `.pfp` and `.pfp.gz`, uses only the standard library,
