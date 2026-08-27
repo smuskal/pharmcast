@@ -17,7 +17,7 @@ only 0.058 s is the fingerprint itself.
 PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It removes the
 conformational stage rather than accelerating it, which is why the speed-up is
 of a different order to what optimisation normally buys: **a complete comparison
-of two molecules, from structure alone, takes 0.584 ms against 5.71 s.**
+of two molecules, from structure alone, takes 1.196 ms against 5.87 s.**
 
 **[Try it now at pharmcast.ai](https://pharmcast.ai/)** — no install, no email.
 
@@ -65,13 +65,22 @@ what scaffold hopping looks like from inside the descriptor.*
 *The two routes to a fingerprint. The conventional route generates a conformer
 ensemble and runs the reference calculation over it. PharmCast predicts the same
 ensemble record from the two dimensional structure and skips the ensemble
-entirely. Panel E is one real catalogue pair scored by PharmCast SCP v7: the
-reference calculation gives a pharmacophoric similarity of 0.30 and PharmCast
-predicts 0.28. The network is 2,059 inputs, hidden layers of 1,024 and 512, and
-one output unit per pharmacophore, 10,549 in total, for 8,045,877 parameters.
-Batched, that is 0.584 ms against 5.71 s, which is 9,772-fold. That figure is
-end to end and includes featurisation, which is roughly 17 times larger than the
-forward pass and cannot be batched away.*
+entirely. Panel E is saquinavir against indinavir, two HIV-1 protease
+inhibitors, scored by PharmCast SCP v7: the reference calculation gives a
+pharmacophoric similarity of 0.84 and PharmCast predicts 0.86, where a two
+dimensional Morgan Tanimoto puts the same pair at 0.30. That gap is the whole
+point of the descriptor. The network is 2,059 inputs, hidden layers of 1,024 and
+512, and one output unit per pharmacophore, 10,549 in total, for 8,045,877
+parameters. Batched, that is 1.196 ms against 5.87 s, which is 4,909-fold. That
+figure is end to end and includes featurisation.*
+
+`saquinavir`
+
+    CC(C)(C)NC(=O)[C@@H]1C[C@@H]2CCCC[C@@H]2CN1C[C@@H](O)[C@H](Cc1ccccc1)NC(=O)[C@H](CC(N)=O)NC(=O)c1ccc2ccccc2n1
+
+`indinavir`
+
+    CC(C)(C)NC(=O)[C@@H]1CN(Cc2cccnc2)CCN1C[C@@H](O)C[C@@H](Cc1ccccc1)C(=O)N[C@H]1c2ccccc2C[C@H]1O
 
 ---
 
