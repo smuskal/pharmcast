@@ -1,5 +1,10 @@
 # PharmCast fingerprint decoding tools
 
+Turns a `.pfp` fingerprint into something a person can read.
+
+[![Fingerprint a molecule](https://img.shields.io/badge/▶%20Fingerprint%20a%20molecule-pharmcast.ai-2d7d46?style=for-the-badge)](https://pharmcast.ai/fingerprint.html)
+[![Compare two molecules](https://img.shields.io/badge/▶%20Compare%20two%20molecules-pharmcast.ai-4a7c1f?style=for-the-badge)](https://pharmcast.ai/compare.html)
+
 ## Scope — decoders only, by design
 
 These tools **read** a `.pfp` fingerprint and make it human readable. They
@@ -22,20 +27,16 @@ tools make that output readable.
 
 ## Try it now — the same report, in the browser
 
-**[pharmcast.ai/fingerprint.html](https://pharmcast.ai/fingerprint.html)** does
-in a browser what `pfp_report.py` does locally. Draw or paste one structure and
-it returns the complete predicted fingerprint: which of the 10,549 pharmacophores
-are set, each one named as a feature triplet, and the fingerprint itself ready to
-copy in both packed 32-bit and `0`/`1` form. No install, no email.
+**Fingerprint a molecule** does in a browser what `pfp_report.py` does locally.
+Draw or paste one structure and it returns the complete predicted fingerprint:
+which of the 10,549 pharmacophores are set, each one named as a feature triplet,
+and the fingerprint itself ready to copy in both packed 32-bit and `0`/`1` form.
+No install, no email.
 
-Use that to see the output; use these tools when you have `.pfp` files of your
-own to decode in bulk, offline, or in a pipeline.
+**Compare two molecules** returns the PharmSim similarity between two structures.
 
-Also live: **[compare two molecules](https://pharmcast.ai/compare.html)** for
-PharmSim similarity between two structures.
-
-
-Turns a `.pfp` fingerprint into something a person can read.
+Use those to see the output; use the tools here when you have `.pfp` files of
+your own to decode in bulk, offline, or in a pipeline.
 
 ## Format
 
