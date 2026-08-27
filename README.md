@@ -102,16 +102,34 @@ checksummed, from **<https://pharmcast.ai/models>**.
 
 | Model | Endpoint | SHA-256 |
 |---|---|---|
-| **PharmCast SCP v6** (current) | GitHub release asset `pharmcast_scp_v6.pt` | `264b5c14…1ecf94ce` |
-| PharmCast SCP v5 (superseded, retained) | [`/models/pharmcast_scp_v5.pt`](https://pharmcast.ai/models/pharmcast_scp_v5.pt) | `748c558c…ad29a3be` |
-| *(all releases)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
+| **PharmCast SCP v7** (current) | [`/models/pharmcast_scp_v7.pt`](https://pharmcast.ai/models/pharmcast_scp_v7.pt) | `ad5aee5c…0b72d4aa8` |
+| *(all releases, append-only)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 ```bash
-# v6 is a GitHub release asset; download it from the Releases page
+curl -O https://pharmcast.ai/models/pharmcast_scp_v7.pt
 curl -O https://pharmcast.ai/models/SHA256SUMS
 shasum -a 256 -c SHA256SUMS                      # macOS / Linux
-certutil -hashfile pharmcast_scp_v6.pt SHA256    # Windows
+certutil -hashfile pharmcast_scp_v7.pt SHA256    # Windows
 ```
+
+**SCP v7 replaced SCP v6 as the served model on 27 August 2026**, and v6, v5 and
+SP v4 were withdrawn from the site at the same time. Their checksums remain in
+`SHA256SUMS`, which is append-only, so a copy someone already holds still
+verifies. Everything below the download section that is labelled **SCP v6 is a
+measurement of SCP v6** and is left labelled that way; v7's own evaluation
+against the same protocol has not been run yet, and re-badging v6's numbers as
+v7's would be a fabrication.
+
+What is measured for v7, on **25 approved-drug pairs with full reference pfpall
+ensembles** (100 ETKDGv3 conformers, UFF relaxed, native binary):
+
+| | mean abs. error | median abs. error | mean signed error |
+|---|---:|---:|---:|
+| **SCP v7** | **0.043** | **0.031** | +0.030 |
+| SCP v6 | 0.062 | 0.052 | +0.047 |
+
+v7 is closer on 17 of the 25 pairs. Both models read high; v7 by less. On
+formoterol/olodaterol the reference is 0.805, v6 said 0.908 and v7 says 0.799.
 
 **A published checkpoint is never replaced in place.** A new release is added
 beside the old ones and `SHA256SUMS` is append-only, so a script pinned to a URL
@@ -388,15 +406,21 @@ very few peptides. Its output layer is 10,549 wide, one per pharmacophore.
 
 **This is work in progress, not a finished system.** All three corpora are still
 being fingerprinted: 3,326,264 of an expected 7,487,360 molecules, **44%**.
-SCP v6 is the current model, trained on a 3,281,914-molecule snapshot taken
-along the way.
+SCP v7 is the current model, trained on a 3,724,667-molecule snapshot taken
+along the way: 3,263,245 screening collection, 430,915 ChEMBL, 30,507 loop
+peptides.
 
-**Work continues toward v7, v8 and beyond.** No model here is a release
+**Work continues toward v8 and beyond.** No model here is a release
 candidate, and none will be until the corpora are complete. A preprint
 describing the finished work is being written.
 
 Each version is published beside its predecessors and never replaces one, so a
 result computed against a given version stays reproducible.
+
+**SCP v7 does reserve a holdout split**: `validation_molecules = 37,623`,
+and it early-stopped at epoch 100 of a 300-epoch budget with the epoch-57
+weights restored (best stopping loss 0.0230824655). The paragraph below
+describes how **SCP v6** was measured, which was different.
 
 **SCP v6 reserved no holdout split**: `validation_molecules = 0`. It is measured
 a different way. Its evaluation population is the molecules fingerprinted
