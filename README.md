@@ -10,14 +10,13 @@
 A pharmacophore fingerprint records the three-dimensional arrangement of binding
 features a molecule can present, so two compounds from completely different
 scaffolds can be compared on the thing a protein actually reads. Its cost has
-never been the fingerprint. Of the **3.28 s** needed to fingerprint one
-catalogue molecule over 100 conformers, **3.23 s is conformer generation** and
-only 0.058 s is the fingerprint itself.
+never been the fingerprint. Almost all of the cost of fingerprinting a
+catalogue molecule is generating its conformer ensemble; the bit calculation
+itself is a small fraction of it.
 
-PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It removes the
-conformational stage rather than accelerating it, which is why the speed-up is
-of a different order to what optimisation normally buys: **a complete comparison
-of two molecules, from structure alone, takes 1.196 ms against 5.87 s.**
+PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It
+removes the conformational stage rather than accelerating it, which is why the
+speed-up is of a different order to what optimisation normally buys.
 
 **[Try it now at pharmcast.ai](https://pharmcast.ai/)** — no install, no email.
 
@@ -71,8 +70,7 @@ pharmacophoric similarity of 0.84 and PharmCast predicts 0.86, where a two
 dimensional Morgan Tanimoto puts the same pair at 0.30. That gap is the whole
 point of the descriptor. The network is 2,059 inputs, hidden layers of 1,024 and
 512, and one output unit per pharmacophore, 10,549 in total, for 8,045,877
-parameters. Batched, that is 1.196 ms against 5.87 s, which is 4,909-fold. That
-figure is end to end and includes featurisation.*
+parameters.*
 
 `saquinavir`
 
