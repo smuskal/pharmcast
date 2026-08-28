@@ -309,24 +309,26 @@ pharmacophores here and the withdrawn SP v4 set 43.*
 
 ## Accuracy
 
-**PharmCast SCP v8**, measured on molecules fingerprinted after its training
-corpus was sealed, so the model cannot have seen them. 5,000 molecules per
-population, all pairs within each.
+**PharmCast SCP v8**, measured on every molecule fingerprinted after its
+training corpus was sealed, so the model cannot have seen them: 96,916
+catalogue compounds, 63,500 ChEMBL and 11,500 loop peptides.
 
-| Population | Pairs | Ranking acc. | Median error | Pearson *r* | Within 0.05 |
+| Population | n | Median error | Within 0.05 | Pearson *r* | Ranking acc. |
 |---|---:|---:|---:|---:|---:|
-| Catalogue chemistry | 12,497,500 | 0.930 | 0.016 | 0.976 | 91.5% |
-| Loop peptides | 12,497,500 | 0.943 | 0.019 | 0.979 | 84.2% |
-| ChEMBL, activity backed | 12,497,500 | 0.889 | 0.025 | 0.936 | 77.9% |
-| **All three combined** | **37,492,500** | | **0.019** | **0.972** | **84.5%** |
-| *Reference against itself* | | | *0.006* | *0.995* | *ceiling* |
+| Catalogue chemistry | 96,916 | 0.016 | 91% | 0.975 | 0.930 |
+| Loop peptides | 11,500 | 0.019 | 84% | 0.979 | 0.944 |
+| ChEMBL, activity backed | 63,500 | 0.024 | 78% | 0.937 | 0.890 |
+| **All three combined** | **171,916** | **0.019** | **85%** | **0.972** | |
+| *Reference against itself* | | *0.006* | | *0.995* | *ceiling* |
 
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
 
-Per fingerprint rather than per pair, on the same held-out molecules: **median
-MCC 0.909** for catalogue chemistry, 0.894 for loop peptides and 0.868 for
-ChEMBL.
+Per fingerprint rather than per pair: **median MCC 0.909** on catalogue
+chemistry, with a 10th percentile of 0.840 and a 90th of 0.947.
+
+*These are the figures in the preprint, which is the ground truth for numbers
+and figures alike.*
 
 That ceiling row sets the scale. Rebuilding the same molecules with a different
 embedding seed reproduces pair similarity to 0.006 at *r* 0.995, so the
@@ -511,9 +513,7 @@ attribution those sources ask for.
 ## White paper
 
 The full method description, with the corpus construction, the evaluation
-protocol and every figure, **is current on SCP v7, not v8.** Its figures come
-from the preprint draft, which has not been re-run on v8 yet. The v8 numbers are
-in this README and on <https://pharmcast.ai/models>.
+protocol and every figure, current on **SCP v8**.
 
 **Read it at <https://pharmcast.ai/whitepaper/>**, or open
 [`docs/whitepaper.pdf`](docs/whitepaper.pdf), which GitHub renders inline.
