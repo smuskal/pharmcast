@@ -252,8 +252,8 @@ PharmCast is self-describing rather than an anonymous block of integers:
 
 ```
 ethanol      ... v1.6  46.1   3   3  0  100 ...
-phenol       ... v1.6  94.1   7  22  0  100 ...
-paracetamol  ... v1.6 151.2  11  43  1  100 ...
+phenol       ... v1.6  94.1   7  17  0  100 ...
+paracetamol  ... v1.6 151.2  11  46  1  100 ...
 ```
 
 `version` is the format version, `MW` the molecular weight, `heavy` the
@@ -267,11 +267,17 @@ number derived from different typing would be worse than writing none.
 
 ```
 $ pfp2bits library.pfp --width 120
->paracetamol  set=43/10549  version=v1.6  mw=151.2  heavy=11  bits=43  rotb=1  nconf=100
-000000000000001000010001010001110000000000000000000000000100000000101100011100000000000000000000110000000000000000000001
+>paracetamol  set=46/10549  version=v1.6  mw=151.2  heavy=11  bits=46  rotb=1  nconf=100
+111000101000100001000000000000000000001000000000000000000000000000000000000000000000111000110100011000001000000000000000
 ```
 
 It loads no model, because the fingerprints are already in the file.
+
+*Bit counts above are **SCP v7**, 27 August 2026. `--width 120` prints the first
+120 of 10,549 pharmacophores, so it is a prefix and not a short fingerprint —
+the same molecule on <https://pharmcast.ai/fingerprint.html> prints all 10,549
+and begins with these same 120 characters. The counts move with the model: the
+withdrawn SP v4 set 43 pharmacophores here rather than 46.*
 
 ---
 
