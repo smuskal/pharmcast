@@ -4,7 +4,7 @@
 # This is the thing PharmCast exists to do: a 3D pharmacophore fingerprint for
 # every molecule, straight from 2D structure, with no conformer generation.
 #
-#   ./01_fingerprint.sh /path/to/PharmCastSP.pt
+#   ./01_fingerprint.sh /path/to/pharmcast_scp_v7.pt
 set -euo pipefail
 MODEL="${1:?usage: ./01_fingerprint.sh MODEL.pt}"
 cd "$(dirname "$0")"

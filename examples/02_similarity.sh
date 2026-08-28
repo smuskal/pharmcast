@@ -6,7 +6,7 @@
 # pharmacophore similarity and by ordinary 2D Morgan similarity. A scaffold hop
 # is a pair that scores high on the first and low on the second.
 #
-#   ./02_similarity.sh /path/to/PharmCastSP.pt
+#   ./02_similarity.sh /path/to/pharmcast_scp_v7.pt
 set -euo pipefail
 MODEL="${1:?usage: ./02_similarity.sh MODEL.pt}"
 cd "$(dirname "$0")"
@@ -14,7 +14,11 @@ cd "$(dirname "$0")"
 pair () {                       # label  smilesA  smilesB
   local label="$1" a="$2" b="$3"
   local ph two
-  ph=$(pharmcast --model "$MODEL" sim "$a" "$b" | awk '/PharmSim/{print $2}')
+  # THREE digits. The library prints four; a fourth digit here is below the
+  # model's own measured error (median 0.016 against reference ensembles), so
+  # printing it invites a reader to take a difference that is not there.
+  ph=$(pharmcast --model "$MODEL" sim "$a" "$b" \
+       | awk '/PharmSim/{printf "%.3f", $2}')
   two=$(python - "$a" "$b" <<'PY'
 import sys
 from rdkit import Chem, DataStructs, RDLogger

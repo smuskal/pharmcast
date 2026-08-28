@@ -149,20 +149,22 @@ Everything below is the command line. Install, download a model, run.
 
 ```bash
 pip install -e .
-# model weights are attached to releases, not committed
-curl -LO https://github.com/smuskal/pharmcast/releases/latest/download/PharmCastSP.pt
+# weights are served from the site, not committed; verify what you got
+curl -LO https://pharmcast.ai/models/pharmcast_scp_v7.pt
+curl -LO https://pharmcast.ai/models/SHA256SUMS
+shasum -a 256 -c SHA256SUMS 2>/dev/null | grep pharmcast_scp_v7
 ```
 
 Then fingerprint a file of SMILES:
 
 ```bash
-pharmcast --model PharmCastSP.pt fp --in examples/data/molecules.smi --out molecules.pfp
+pharmcast --model pharmcast_scp_v7.pt fp --in examples/data/molecules.smi --out molecules.pfp
 ```
 
 Compare two molecules:
 
 ```bash
-pharmcast --model PharmCastSP.pt sim \
+pharmcast --model pharmcast_scp_v7.pt sim \
   "C[C@]12CC[C@H]3[C@H](CCc4cc(O)ccc34)[C@@H]1CC[C@@H]2O" \
   'CC/C(=C(/CC)c1ccc(O)cc1)c1ccc(O)cc1'
 ```
@@ -170,14 +172,14 @@ pharmcast --model PharmCastSP.pt sim \
 See the bits:
 
 ```bash
-pharmcast --model PharmCastSP.pt bits "CC(=O)Nc1ccc(O)cc1" --width 120
+pharmcast --model pharmcast_scp_v7.pt bits "CC(=O)Nc1ccc(O)cc1" --width 120
 pfp2bits molecules.pfp --format positions
 ```
 
 And ask the model what it is:
 
 ```bash
-pharmcast --model PharmCastSP.pt card
+pharmcast --model pharmcast_scp_v7.pt card
 ```
 
 ## Worked examples
@@ -187,10 +189,10 @@ path and prints its own output; nothing needs editing first.
 
 ```bash
 cd examples
-./01_fingerprint.sh  /path/to/PharmCastSP.pt   # SMILES file -> native .pfp
-./02_similarity.sh   /path/to/PharmCastSP.pt   # 3D vs 2D similarity, three pairs
-./03_bits.sh         /path/to/PharmCastSP.pt   # fingerprints -> ones and zeros
-./04_model_card.sh   /path/to/PharmCastSP.pt   # corpus and applicability domain
+./01_fingerprint.sh  /path/to/pharmcast_scp_v7.pt   # SMILES file -> native .pfp
+./02_similarity.sh   /path/to/pharmcast_scp_v7.pt   # 3D vs 2D similarity, three pairs
+./03_bits.sh         /path/to/pharmcast_scp_v7.pt   # fingerprints -> ones and zeros
+./04_model_card.sh   /path/to/pharmcast_scp_v7.pt   # corpus and applicability domain
 ```
 
 `02_similarity.sh` is the one to run first. It scores three pairs **both ways**,
@@ -199,10 +201,16 @@ alone does not tell you anything:
 
 ```
                                       3D (PharmCast)   2D (Morgan)
-  estradiol / diethylstilbestrol      pharmacophore 0.5062   2D 0.163
-  aspirin / salicylate                pharmacophore 0.4775   2D 0.448
-  caffeine / ibuprofen                pharmacophore 0.0000   2D 0.087
+  estradiol / diethylstilbestrol      pharmacophore 0.479    2D 0.163
+  aspirin / salicylate                pharmacophore 0.379    2D 0.448
+  caffeine / ibuprofen                pharmacophore 0.000    2D 0.087
 ```
+
+*Numbers above are real output from `02_similarity.sh` on **SCP v7**, run
+27 August 2026. They move with the model: the same three pairs on the withdrawn
+SP v4 gave 0.5062, 0.4775 and 0.0000, and that stale transcript sat in this
+README until it was re-run. If your output differs, check the checkpoint's
+sha256 and your RDKit version before anything else.*
 
 Estradiol and diethylstilbestrol are unrelated in 2D and bind the same receptor.
 That gap between the columns is the scaffold hop, and it is the whole reason to

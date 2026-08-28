@@ -7,7 +7,7 @@
 #   pharmcast bits   one molecule, straight from SMILES  (needs the model)
 #   pfp2bits         a whole .pfp file                   (needs no model)
 #
-#   ./03_bits.sh /path/to/PharmCastSP.pt
+#   ./03_bits.sh /path/to/pharmcast_scp_v7.pt
 set -euo pipefail
 MODEL="${1:?usage: ./03_bits.sh MODEL.pt}"
 cd "$(dirname "$0")"
