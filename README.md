@@ -456,26 +456,6 @@ loop sequences the median is 0.878, which is what the ensemble record is built t
 capture. Regenerated at each release, so it grows as more structures are
 extracted.*
 
----
-
-## Two rules for using the scores
-
-1. **Never predict the reference of a campaign.** Fingerprint it once with the
-   real calculation. There is no reason to accept model error on the one
-   molecule the work is aimed at.
-2. **PharmCast scores rank; they are not quoted.** The predicted fingerprint
-   carries a small systematic offset in bit count, harmless for ordering and
-   misleading in a report. Published numbers come from a real rescore of the
-   survivors.
-
-There is a third, which matters under optimisation pressure: **a search pointed
-at PharmCast will eventually optimise its error rather than the molecule.**
-Measured on a design campaign, seventeen times the search budget raised the
-median surrogate score by 0.20 and the median real score by 0.02, while the
-surrogate's own error over survivors went from +0.06 to +0.24. Rescore before
-believing anything, and carry many survivors into that rescore rather than a top
-handful.
-
 ## What is *not* here
 
 This repository ships the model and the utilities for using it. It does **not**
