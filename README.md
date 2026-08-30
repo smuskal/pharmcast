@@ -123,45 +123,15 @@ shasum -a 256 -c SHA256SUMS                      # macOS / Linux
 certutil -hashfile pharmcast_scp_v8.pt SHA256    # Windows
 ```
 
-**SCP v8 is the current model.** Every number and every figure below is v8
-unless it is explicitly labelled otherwise. The previous release stays
-downloadable so that results computed against it remain reproducible, but it is
-not the subject of this document. Checkpoints older than that are not
-distributed; their checksums remain in `SHA256SUMS`, which is append-only, so a
-copy someone already holds still verifies.
+**SCP v8 is the current model**, and everything below describes it. Superseded
+checkpoints are not distributed; their checksums remain in `SHA256SUMS`, which
+is append-only, so a copy someone already holds still verifies.
 
-**Scores move between releases**, sometimes a long way, so quote the model
-alongside any number you take from here.
-
-### What changed in v8
-
-Same architecture as v7 — 2,059 inputs, hidden layers of 1,024 and 512, 10,549
-outputs, 8,045,877 parameters — trained on a larger corpus. The snapshot was
-4,282,423 molecules (3,579,209 screening collection, 635,514 ChEMBL, 67,700
-peptides), of which 1% was held out as a molecular-weight-stratified stopping
-set, leaving 4,239,599 for gradient updates. 100 epochs; the epoch-66 weights
-were restored as the best stopping loss.
-
-It is also the first PharmCast model trained on the GPU (Apple MPS) rather than
-the CPU.
-
-**Against the model it replaces**, head to head on one common held-out set that
-neither was trained on, 5,000 molecules per population:
-
-| Population | Ranking acc. | Median error | Pearson *r* | Median MCC |
-|---|---:|---:|---:|---:|
-| Catalogue chemistry | 0.929 → **0.930** | 0.0160 → **0.0156** | 0.9751 → **0.9760** | 0.9077 → **0.9083** |
-| Loop peptides | 0.938 → **0.944** | 0.0200 → **0.0189** | 0.9752 → **0.9789** | 0.8964 → 0.8946 |
-| ChEMBL, activity backed | 0.880 → **0.889** | 0.0271 → **0.0245** | 0.9244 → **0.9366** | 0.8588 → **0.8685** |
-
-v8 is ahead on ranking accuracy, median error and Pearson *r* in every
-population. The single metric where it is not is per-molecule MCC on loop
-peptides, 0.8946 against 0.8964. The clearest gain is ChEMBL, where the corpus
-grew 46%.
-
-*The 25-approved-drug-pair test against full reference ensembles has not
-been re-run since v8 shipped; its last measurement was on the previous release
-and is omitted here rather than presented as current.*
+It is trained on a sealed snapshot of 4,282,423 molecules — 3,579,209 screening
+collection, 635,514 ChEMBL, 67,700 loop peptides — of which 1% was held out as a
+molecular-weight-stratified stopping set, leaving 4,239,599 for gradient
+updates. 2,059 inputs, hidden layers of 1,024 and 512, 10,549 outputs,
+8,045,877 parameters.
 
 **A published checkpoint is never replaced in place.** A new release is added
 beside the old ones and `SHA256SUMS` is append-only, so a script pinned to a URL
@@ -325,12 +295,9 @@ alone does not tell you anything:
   caffeine / ibuprofen                pharmacophore 0.000    2D 0.087
 ```
 
-*Numbers above are real output from `02_similarity.sh` on **SCP v8**, run
-28 August 2026. They move with the model, and the estradiol pair moved a long
-way: v7 gave 0.479, 0.379 and 0.000 for these three, and the withdrawn SP v4
-gave 0.5062, 0.4775 and 0.0000. A stale transcript sat in this README once
-already. If your output differs, check the checkpoint's sha256 and your RDKit
-version before anything else.*
+*Numbers above are real output from `02_similarity.sh` on **SCP v8**. They move
+with the model, so if your output differs, check the checkpoint's sha256 and
+your RDKit version before anything else.*
 
 Estradiol and diethylstilbestrol are unrelated in 2D and bind the same receptor.
 That gap between the columns is the scaffold hop, and it is the whole reason to
@@ -400,11 +367,10 @@ $ pfp2bits library.pfp --width 120
 
 It loads no model, because the fingerprints are already in the file.
 
-*Bit counts above are **SCP v8**, 28 August 2026. `--width 120` prints the first
-120 of 10,549 pharmacophores, so it is a prefix and not a short fingerprint —
-the same molecule on <https://pharmcast.ai/fingerprint.html> prints all 10,549
-and begins with these same 120 characters. The counts move with the model: v7 set 46
-pharmacophores here and the withdrawn SP v4 set 43.*
+*Bit counts above are **SCP v8**. `--width 120` prints the first 120 of 10,549
+pharmacophores, so it is a prefix and not a short fingerprint — the same
+molecule on <https://pharmcast.ai/fingerprint.html> prints all 10,549 and begins
+with these same 120 characters. The counts move with the model.*
 
 ---
 
@@ -530,9 +496,6 @@ for gradient updates and 42,824 reserved for early stopping:
 | Screening collection | 3,579,209 | 83.58% |
 | ChEMBL, activity backed | 635,514 | 14.84% |
 | Protein loop peptides | 67,700 | 1.58% |
-
-For comparison, SCP v7 trained on 3,724,667: 3,263,245 screening collection,
-430,915 ChEMBL, 30,507 loop peptides.
 
 Its output layer is 10,549 wide, one per pharmacophore.
 

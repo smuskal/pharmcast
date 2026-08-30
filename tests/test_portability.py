@@ -66,6 +66,26 @@ def test_matrix_agrees_with_pairwise_under_the_fallback(monkeypatch):
             assert abs(fallback[i, j] - pharmtan(fps[i], fps[j])) < 1e-9
 
 
+def _internal_names():
+    """Internal tool, binary and data-file names that must never ship.
+
+    They are not part of this project's public vocabulary, and they reached
+    this repository once already, in prose that described the screening command
+    by the name of its internal predecessor. Refer to what a thing DOES -- "the
+    reference calculation", "the reference generator" -- never to the program
+    that does it.
+
+    Held encoded rather than spelled out, because a test enforcing "these words
+    must not be published" should not itself publish them. Both cases are
+    returned, so a lowercase spelling is caught too.
+    """
+    import base64
+    raw = base64.b64decode(
+        "UGhhcm1UYW5MaXN0LHBmcGFsbCxwZnByaWdpZCxNQVhEQixwaGFybXByaW50X25vUixw"
+        "aGFybXByaW50X1Jvbmx5LHBoYXJtcHJpbnRfc3ltbQ==").decode().split(",")
+    return raw + [n.lower() for n in raw]
+
+
 def test_no_absolute_developer_paths_or_internal_names_anywhere_shipped():
     """Nothing shipped may carry a developer path or an internal project name.
 
@@ -79,7 +99,9 @@ def test_no_absolute_developer_paths_or_internal_names_anywhere_shipped():
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # Anything an outsider can read after a clone or a pip install.
-    roots = ["src", "docs", "tests", "examples"]
+    # `tools` is walked too: the decoding tools ship with their own README,
+    # and it named the reference generator and its data files until 2026-08-30.
+    roots = ["src", "docs", "tests", "examples", "tools"]
     files = [os.path.join(root, f)
              for f in ("README.md", "NOTICE", "CITATION.cff", "pyproject.toml")]
     for d in roots:
@@ -91,11 +113,15 @@ def test_no_absolute_developer_paths_or_internal_names_anywhere_shipped():
                 continue
             files += [os.path.join(base, n) for n in names
                       if n.endswith((".py", ".md", ".txt", ".toml", ".cfg",
-                                     ".yml", ".yaml", ".rst"))]
+                                     ".yml", ".yaml", ".rst", ".c", ".h",
+                                     ".sh")) or n == "Makefile"]
 
+    # Local paths and build-machine detail. A published file naming one of
+    # these tells a reader nothing and tells them where it was built.
     banned = ["/Users/", "\\\\Users\\\\", "miniforge", "ai-steve",
               "chip-sandbox", "enamine-screening", "pfp-libraries",
-              "pfp-surrogate"]
+              "pfp-surrogate",
+              ] + _internal_names()
     bad = []
     for path in files:
         if not os.path.exists(path):

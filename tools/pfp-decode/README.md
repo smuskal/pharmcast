@@ -189,8 +189,8 @@ unsigned 32 bit words) and the same fingerprint expanded to a 10,549 character
 Bit order is proven, not assumed. On real PharmCast rows all four agree
 exactly: the rebuilt `pfp2bits` against the original binary, arm64 against
 x86_64, and `pfp_report.py --bits` against `pfp2bits`. The Python decoder in
-`pfp-surrogate` (little endian unpack then `PACK_POS`) produces the identical
-bit set.
+the `pharmcast` package (little endian unpack then `PACK_POS`) produces the
+identical bit set.
 
 Example: `examples/CHEMBL163631.pfp` and `examples/CHEMBL163631_report.html`.
 
