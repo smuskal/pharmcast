@@ -1,7 +1,7 @@
 # PharmCast fingerprint decoders. Build and verify.
 #
 # Scoped deliberately to the four decoder binaries. This Makefile must never
-# build, link or reference pfpall -- the generator is not part of this tree.
+# build, link or reference the reference generator -- it is not part of this tree.
 #
 #   make            build for the host architecture
 #   make all-archs  build arm64 and x86_64 (macOS cross-compile)

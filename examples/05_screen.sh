@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Nearest-neighbour screening: rank a target set against one or more queries.
 #
-# This is the port of the original PharmPrint tool PharmTanList.x, which took
-# ONE query, a cutoff, and a database. This one takes many queries, top-N as
-# well as a cutoff, and has no fixed database cap.
+# Every fingerprint in the query file is ranked against the whole target set.
+# Bound the result with a top-N, a score cutoff, or both.
 #
 #   ./05_screen.sh /path/to/pharmcast_scp_v8.pt
 #
@@ -37,15 +36,15 @@ pharmcast --model "$MODEL" screen \
   | grep -v '^#' | cut -f1,3,4,6 | column -t
 
 echo
-echo "== the same screen with a cutoff, which is what PharmTanList.x did"
+echo "== the same screen bounded by a score cutoff instead of a top-N"
 pharmcast --model "$MODEL" screen \
   --queries "$TMP/queries.smi" --targets "$TMP/targets.smi" --cutoff 0.3 \
   | grep -v '^#' | cut -f1,3,4,6 | column -t
 
 echo
 echo "== NO MODEL NEEDED once the fingerprints exist"
-# A .pfp already holds fingerprints, whatever produced them: pfpall, PharmCast,
-# or the original C tools. Screening two of them loads no checkpoint at all.
+# A .pfp already holds fingerprints, whatever produced them: the reference
+# calculation or PharmCast. Screening two of them loads no checkpoint at all.
 pharmcast --model "$MODEL" fp --in "$TMP/targets.smi" --out "$TMP/targets.pfp" 2>/dev/null
 pharmcast --model "$MODEL" fp --in "$TMP/queries.smi" --out "$TMP/queries.pfp" 2>/dev/null
 pharmcast screen --queries "$TMP/queries.pfp" --targets "$TMP/targets.pfp" --top 3 \
@@ -63,5 +62,5 @@ cat <<'TXT'
 
   The last block used no --model. Screening is a comparison between
   fingerprints; where they came from is recorded in the output header and never
-  inferred, so a real pfpall library and a predicted one screen the same way.
+  inferred, so a reference library and a predicted one screen the same way.
 TXT

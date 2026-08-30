@@ -13,8 +13,9 @@ from pharmcast import pharmtan, pharmtan_matrix
 from pharmcast import similarity as S
 
 
-def test_packing_matches_pfpall_and_is_host_independent():
-    """`pack` must produce the same integers pfpall would, on any machine.
+def test_packing_matches_the_reference_and_is_host_independent():
+    """`pack` must produce the same integers the reference calculation would,
+    on any machine.
 
     pfpkey.c line 817 is the authority:
 

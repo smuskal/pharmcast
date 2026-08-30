@@ -138,10 +138,10 @@ def test_tsv_has_a_header_and_full_identifiers():
 # ---------------------------------------------------------------------------
 # Provenance independence.
 #
-# A .pfp is a FORMAT, not a producer. Real pfpall output, PharmCast predictions
-# and files from the original C tools are all valid input, and all four
-# combinations of query and target origin must work -- with no model loaded,
-# because a .pfp already holds fingerprints.
+# A .pfp is a FORMAT, not a producer. Fingerprints from the reference
+# calculation and fingerprints predicted by PharmCast are equally valid input,
+# and all four combinations of query and target origin must work -- with no
+# model loaded, because a .pfp already holds fingerprints.
 # ---------------------------------------------------------------------------
 import subprocess
 import sys as _sys
@@ -158,7 +158,7 @@ def _write(tmp_path, name, records, nconf):
 
 @pytest.mark.parametrize("q_conf,t_conf", [(1, 1), (100, 100), (1, 100), (100, 1)])
 def test_all_four_provenance_combinations_need_no_model(tmp_path, q_conf, t_conf):
-    """pfpall/pfpall, predicted/predicted, and both mixed directions."""
+    """reference/reference, predicted/predicted, and both mixed directions."""
     q = _write(tmp_path, "q.pfp",
                [("q%d" % i, _fp(i), "C") for i in range(3)], nconf=q_conf)
     t = _write(tmp_path, "t.pfp",

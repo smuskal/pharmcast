@@ -41,7 +41,7 @@ def test_pack_never_writes_a_dead_position():
 def test_top_pharmacophores_survive_a_round_trip():
     """Pharmacophores 10528-10548 live at packed 10559 down to 10539.
 
-    A `[:10549]` slice silently drops exactly these. Real pfpall records do set
+    A `[:10549]` slice silently drops exactly these. Real reference records set
     them, rarely: pharmacophores 10529 and 10531 appear in the ChEMBL corpus.
     """
     for j in (10528, 10529, 10531, 10540, 10548):

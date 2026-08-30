@@ -159,7 +159,7 @@ population. The single metric where it is not is per-molecule MCC on loop
 peptides, 0.8946 against 0.8964. The clearest gain is ChEMBL, where the corpus
 grew 46%.
 
-*The 25-approved-drug-pair test against full reference pfpall ensembles has not
+*The 25-approved-drug-pair test against full reference ensembles has not
 been re-run since v8 shipped; its last measurement was on the previous release
 and is omitted here rather than presented as current.*
 
@@ -222,15 +222,10 @@ pharmcast --model pharmcast_scp_v8.pt card
 
 ## Screening a library
 
-`pharmcast screen` ranks a target set against one or more queries. It is a port
-of the original PharmPrint tool `PharmTanList.x`:
-
-    PharmTanList.x cutoff qry.bits db.bits
-
-with three deliberate differences and nothing else: **every** fingerprint in the
-query file is used rather than only the first, **top-N** is available as well as
-a cutoff, and there is **no fixed database cap** — the original preallocated
-100,000 entries and aborted past it.
+`pharmcast screen` ranks a target set against one or more queries. Every
+fingerprint in the query file is used, each ranked against the whole target
+set; results can be bounded by a top-N, by a score cutoff, or by both, and
+there is no cap on how many targets may be screened.
 
 ```bash
 pharmcast screen --queries Q --targets T [--top N] [--cutoff X] [--out FILE]
@@ -254,16 +249,16 @@ names to 20 characters, and a clipped identifier is not an identifier.
 
 ### It works on any `.pfp`, whatever produced it
 
-A `.pfp` is a **format, not a producer**. Real `pfpall` output, PharmCast
-predictions, and files from the original PharmPrint C tools are all valid input,
-and all four combinations work:
+A `.pfp` is a **format, not a producer**. Fingerprints computed by the
+reference calculation and fingerprints predicted by PharmCast are equally valid
+input, and all four combinations work:
 
 | Queries | Targets | What you are asking |
 |---|---|---|
-| real | real | ground truth against ground truth |
+| reference | reference | ground truth against ground truth |
 | predicted | predicted | predicted against predicted |
-| real | predicted | would a real query have found this predicted library? |
-| predicted | real | does a predicted query retrieve the right real neighbours? |
+| reference | predicted | would a reference query have found this predicted library? |
+| predicted | reference | does a predicted query retrieve the right reference neighbours? |
 
 **No model is loaded when both sides are `.pfp`.** `--model` is required only
 when an input is `.smi`:
@@ -281,7 +276,7 @@ screen that mixes real and predicted fingerprints never leaves a reader
 guessing which side was which:
 
 ```
-# queries: loops.pfp (native .pfp, 93 records, version v1.6, nconf 1)
+# queries: reference.pfp (native .pfp, 93 records, version v1.6, nconf 1)
 # targets: predicted.pfp (native .pfp, 6 records, version v1.6, nconf 100)
 ```
 
@@ -601,7 +596,7 @@ extracted.*
 ## What is *not* here
 
 This repository ships the model and the utilities for using it. It does **not**
-ship the reference pharmacophore fingerprint generator (`pfpall` / `pfprigid`)
+ship the reference pharmacophore fingerprint generator
 or any of the fingerprint-generating toolchain, and it does not redistribute any
 training corpus.
 

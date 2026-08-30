@@ -1,18 +1,8 @@
 """Nearest-neighbour screening: many queries against a large target set.
 
-This is a port of the original PharmPrint C tool, `PharmTanList.x`, which is the
-reference for behaviour:
-
-    PharmTanList.x cutoff qry.bits db.bits
-    returns list of Tanimoto scores >= cutoff in db.bits
-    using 1st fingerprint in qry.bits, ordered by score
-
-Three deliberate differences, and nothing else:
-
-* **Every** fingerprint in the query file is used, not only the first.
-* Top-N as well as a cutoff, and the two compose.
-* No fixed database cap. The original preallocates `MAXDB 100000` entries and
-  aborts past it, which is why a `PharmTanListNoLimit.c` had to exist at all.
+Every fingerprint in the query file is used, each ranked against the whole
+target set. Results can be bounded by a top-N, by a score cutoff, or by both,
+and there is no cap on how many targets may be screened.
 
 WHY THIS IS NOT `pharmtan_matrix`. That function is correct and vectorised and
 stays the right tool for a few thousand fingerprints, but it materialises one
@@ -28,13 +18,14 @@ bit for bit: the same popcount over the same packed words, only vectorised
 across a chunk. `tests/test_screen.py` asserts that against the pairwise path
 rather than trusting this paragraph.
 
-PROVENANCE INDEPENDENCE. A `.pfp` is a format, not a producer. Real `pfpall`
-output, PharmCast predictions and files from the original PharmPrint C tools are
-all valid input, and all four combinations of query and target origin are
-legitimate -- including a real query screening a predicted library, which is how
-you ask "would this screen have found the same thing". So nothing here infers or
-requires a producer. What IS enforced is the format contract: exactly N_INTS
-words per record, and a declared set-bit count that cannot exceed N_PHARM.
+PROVENANCE INDEPENDENCE. A `.pfp` is a format, not a producer. Fingerprints
+computed by the reference calculation and fingerprints predicted by PharmCast
+are equally valid input, and all four combinations of query and target origin
+are legitimate -- including a reference query screening a predicted library,
+which is how you ask "would this screen have found the same thing". So nothing
+here infers or requires a producer. What IS enforced is the format contract:
+exactly N_INTS words per record, and a declared set-bit count that cannot exceed
+N_PHARM.
 
 The one honest hazard in mixing them is the conformer count. A 100-conformer
 ensemble compared against a single-conformer fingerprint scores lower for that

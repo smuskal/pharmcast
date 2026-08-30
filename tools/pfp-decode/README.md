@@ -8,14 +8,13 @@ Turns a `.pfp` fingerprint into something a person can read.
 ## Scope — decoders only, by design
 
 These tools **read** a `.pfp` fingerprint and make it human readable. They
-**cannot produce one**. Fingerprint generation is performed by `pfpall`, which
-is not distributed here and is not part of this repository.
+**cannot produce one**. Fingerprint generation is performed by the reference
+generator, which is not distributed here and is not part of this repository.
 
 Deliberately excluded, and not to be added:
 
-- `pfpall`, `pfpall_arm64`, `pfpall.c` — the fingerprint generator
-- `pharmprint_noR1.6.data`, `pharmprint_Ronly.data`, `pharmprint_symm.data` —
-  the pharmacophore definition files the generator consumes
+- the reference fingerprint generator, in source or binary form
+- the pharmacophore definition files that generator consumes
 - compiled binaries of any kind — build from source with the command below
 
 `pharm10549.list` **is** included: it is the bit-index-to-pharmacophore lookup
@@ -68,7 +67,7 @@ edge distances in angstroms.
 | `X` | No feature | | |
 
 Feature codes are taken from the pharmacophore definition files
-(`pharmprint_noR1.6.data`, `pharmprint_Ronly.data`), not inferred.
+the generator's own pharmacophore definition files, not inferred.
 
 ## Tools
 
@@ -197,7 +196,7 @@ Example: `examples/CHEMBL163631.pfp` and `examples/CHEMBL163631_report.html`.
 
 ## Source changes from the originals
 
-Both `.c` files derive from the original 2002-era PharmPrint sources, which
+Both `.c` files derive from the original 2002-era sources, which
 are unchanged upstream.
 Two defects were fixed here:
 
@@ -220,4 +219,5 @@ done
 ```
 
 These tools are decoders. They do not generate fingerprints and are outside
-the `control_expectation.json` binary pin, which governs `pfpall` only.
+the `control_expectation.json` binary pin, which governs the reference
+generator only.

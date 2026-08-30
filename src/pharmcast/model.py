@@ -1,13 +1,15 @@
 """PharmCast: predict a PolyPharmPrint ensemble fingerprint from a SMILES.
 
 The normal route from a structure to a 3D pharmacophore fingerprint is SMILES,
-then a 100-conformer ensemble, then `pfpall` over that ensemble -- about 2.5
+then a 100-conformer ensemble, then the reference calculation over that
+ensemble -- about 2.5
 seconds per catalogue molecule, of which almost all is conformer generation.
 PharmCast goes straight from the SMILES to the predicted fingerprint in well
 under a millisecond.
 
 THE OUTPUT IS THE STANDARD NATIVE FORMAT, not an internal representation.
-`words_batch` returns the same 330 unsigned 32-bit integers that `pfpall`
+`words_batch` returns the same 330 unsigned 32-bit integers the reference
+calculation
 emits, in the same bit convention, so any tool that consumes a native `.pfp`
 consumes PharmCast output unchanged.
 

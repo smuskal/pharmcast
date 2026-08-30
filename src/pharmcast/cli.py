@@ -72,17 +72,16 @@ def cmd_sim(a):
 def cmd_screen(a):
     """Nearest-neighbour screen: every query against every target.
 
-    A port of PharmTanList.x. See screen.py for what was kept and what was
-    deliberately changed.
+    See screen.py for how the streaming and the format contract work.
     """
     def need_model(path):
         p = str(path)
         return not (p.endswith(".pfp") or p.endswith(".pfp.gz"))
 
     # NO MODEL IS LOADED WHEN BOTH SIDES ARE .pfp. A .pfp already holds
-    # fingerprints, whatever produced them -- pfpall, PharmCast, or the
-    # original C tools -- and loading a checkpoint to compare them would be
-    # both pointless and misleading about what the numbers depend on.
+    # fingerprints, whatever produced them -- the reference calculation or
+    # PharmCast -- and loading a checkpoint to compare them would be both
+    # pointless and misleading about what the numbers depend on.
     # `pfp2bits` sets the same precedent.
     wants_model = need_model(a.queries) or (a.targets and need_model(a.targets))
     if wants_model and not a.model:
@@ -245,7 +244,7 @@ def main(argv=None):
                         "no --cutoff is given)")
     s.add_argument("--cutoff", type=float, default=None,
                    help="keep only hits scoring at or above this, as the "
-                        "original PharmTanList.x did")
+                        "reference screening tools do")
     s.add_argument("--out", help="write TSV here instead of stdout")
     # --model is deliberately NOT required here: two .pfp inputs need none.
     s.set_defaults(fn=cmd_screen)
