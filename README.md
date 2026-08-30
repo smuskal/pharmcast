@@ -194,6 +194,19 @@ pharmcast --model pharmcast_scp_v8.pt sim \
   'CC/C(=C(/CC)c1ccc(O)cc1)c1ccc(O)cc1'
 ```
 
+Screen a library for nearest neighbours:
+
+```bash
+pharmcast --model pharmcast_scp_v8.pt screen \
+  --queries queries.smi --targets library.smi --top 10
+```
+
+Once fingerprints exist, screening needs **no model at all**:
+
+```bash
+pharmcast screen --queries queries.pfp --targets library.pfp --top 10
+```
+
 See the bits:
 
 ```bash
@@ -207,6 +220,91 @@ And ask the model what it is:
 pharmcast --model pharmcast_scp_v8.pt card
 ```
 
+## Screening a library
+
+`pharmcast screen` ranks a target set against one or more queries. It is a port
+of the original PharmPrint tool `PharmTanList.x`:
+
+    PharmTanList.x cutoff qry.bits db.bits
+
+with three deliberate differences and nothing else: **every** fingerprint in the
+query file is used rather than only the first, **top-N** is available as well as
+a cutoff, and there is **no fixed database cap** — the original preallocated
+100,000 entries and aborted past it.
+
+```bash
+pharmcast screen --queries Q --targets T [--top N] [--cutoff X] [--out FILE]
+```
+
+`--queries` and `--targets` each take a native `.pfp`/`.pfp.gz` or a `.smi`,
+which is fingerprinted through the model first. Omit `--targets` to screen the
+queries against themselves, excluding self-matches. With neither `--top` nor
+`--cutoff`, the default is `--top 10`; given both, you get the best N of those
+at or above the cutoff.
+
+Output is TSV with a header and one row per query per hit, ranked:
+
+```
+query_name  query_smiles  rank  target_name  target_smiles  pharmtan  query_bits  target_bits
+```
+
+Ties are broken by target name, so the ordering is reproducible across runs and
+machines. Names and SMILES are written **in full** — the original truncated
+names to 20 characters, and a clipped identifier is not an identifier.
+
+### It works on any `.pfp`, whatever produced it
+
+A `.pfp` is a **format, not a producer**. Real `pfpall` output, PharmCast
+predictions, and files from the original PharmPrint C tools are all valid input,
+and all four combinations work:
+
+| Queries | Targets | What you are asking |
+|---|---|---|
+| real | real | ground truth against ground truth |
+| predicted | predicted | predicted against predicted |
+| real | predicted | would a real query have found this predicted library? |
+| predicted | real | does a predicted query retrieve the right real neighbours? |
+
+**No model is loaded when both sides are `.pfp`.** `--model` is required only
+when an input is `.smi`:
+
+```bash
+pharmcast screen --queries real.pfp --targets predicted.pfp --top 10
+```
+
+Nothing infers or requires a producer. What *is* checked is the format
+contract: every record must carry 330 unsigned 32-bit words, and a declared
+set-bit count may not exceed 10,549.
+
+Each run writes the provenance of both inputs into the output header, so a
+screen that mixes real and predicted fingerprints never leaves a reader
+guessing which side was which:
+
+```
+# queries: loops.pfp (native .pfp, 93 records, version v1.6, nconf 1)
+# targets: predicted.pfp (native .pfp, 6 records, version v1.6, nconf 100)
+```
+
+**One honest hazard when mixing them.** A 100-conformer ensemble compared
+against a single-conformer fingerprint scores lower for that reason alone. When
+the two sides declare different `nconf`, the command warns on stderr, naming
+both values, and continues — the comparison is meaningful, it just must not be
+read as though both sides had the same conformational coverage.
+
+### Scale
+
+Targets are streamed in chunks with a bounded top-N heap per query, so memory
+is a function of the query count and N, never of how many targets there are.
+A full queries-by-targets matrix is never materialised: `pharmtan_matrix`
+remains the right tool for a few thousand fingerprints, but at four million
+targets one query row alone is 32 MB.
+
+Throughput is reported to stderr on completion.
+
+The coefficient is exactly the one `pharmtan` computes pairwise — same popcount
+over the same packed words, vectorised across a chunk. `tests/test_screen.py`
+asserts that rather than asking you to take it on trust.
+
 ## Worked examples
 
 `examples/` holds runnable scripts and the data they use. Each takes a model
@@ -218,6 +316,7 @@ cd examples
 ./02_similarity.sh   /path/to/pharmcast_scp_v8.pt   # 3D vs 2D similarity, three pairs
 ./03_bits.sh         /path/to/pharmcast_scp_v8.pt   # fingerprints -> ones and zeros
 ./04_model_card.sh   /path/to/pharmcast_scp_v8.pt   # corpus and applicability domain
+./05_screen.sh       /path/to/pharmcast_scp_v8.pt   # rank a library against queries
 ```
 
 `02_similarity.sh` is the one to run first. It scores three pairs **both ways**,
@@ -253,9 +352,16 @@ pharmcast --model M.pt bits     "SMILES" [--format binary|positions|words] [--wi
 pharmcast --model M.pt card
 pharmcast --model M.pt pfp2bits FILE.pfp
 
+pharmcast --model M.pt screen   --queries Q.smi --targets T.smi [--top N] [--cutoff X] [--out FILE]
+pharmcast screen                --queries Q.pfp --targets T.pfp   # no model needed
+
 pfp2bits FILE.pfp                              # standalone, no model needed
 pfp2bits FILE.pfp --format positions --json
 ```
+
+Two commands need **no model**, because they operate on fingerprints that
+already exist rather than predicting new ones: `pfp2bits`, and `screen` when
+both of its inputs are `.pfp`.
 
 `fp` is the one that matters for throughput: it batches, and PharmCast earns its
 speed in a batch rather than one molecule at a time.

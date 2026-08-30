@@ -2,6 +2,7 @@
 
     pharmcast fp       --model M --in in.smi --out out.pfp
     pharmcast sim      --model M "SMILES_A" "SMILES_B"
+    pharmcast screen   --model M --queries q.smi --targets db.pfp --top 10
     pharmcast bits     --model M "SMILES"  [--width N]
     pharmcast card     --model M
     pharmcast pfp2bits FILE.pfp                 (no model needed)
@@ -20,6 +21,8 @@ from . import bits as B
 from .io import read_pfp, read_pfp_records, read_smiles, write_pfp
 from .model import PharmCast
 from .similarity import pharmsim
+from .screen import (Provenance, iter_fingerprints, screen,
+                     warn_on_conformer_mismatch, write_tsv)
 
 
 def _load(a):
@@ -64,6 +67,73 @@ def cmd_sim(a):
     print("only A     %d" % r["only_a"])
     print("only B     %d" % r["only_b"])
     print("union      %d" % r["union"])
+
+
+def cmd_screen(a):
+    """Nearest-neighbour screen: every query against every target.
+
+    A port of PharmTanList.x. See screen.py for what was kept and what was
+    deliberately changed.
+    """
+    def need_model(path):
+        p = str(path)
+        return not (p.endswith(".pfp") or p.endswith(".pfp.gz"))
+
+    # NO MODEL IS LOADED WHEN BOTH SIDES ARE .pfp. A .pfp already holds
+    # fingerprints, whatever produced them -- pfpall, PharmCast, or the
+    # original C tools -- and loading a checkpoint to compare them would be
+    # both pointless and misleading about what the numbers depend on.
+    # `pfp2bits` sets the same precedent.
+    wants_model = need_model(a.queries) or (a.targets and need_model(a.targets))
+    if wants_model and not a.model:
+        raise SystemExit("a .smi input has to be fingerprinted: pass --model")
+    model = PharmCast.load(a.model, threads=a.threads) if wants_model else None
+
+    q_prov = Provenance(a.queries)
+    queries = list(iter_fingerprints(a.queries, model, provenance=q_prov))
+    if not queries:
+        raise SystemExit("no fingerprints in %s" % a.queries)
+
+    # --targets omitted means screen the queries against themselves. The query
+    # list is already in memory, so this streams a copy of it rather than
+    # re-reading and re-fingerprinting the file.
+    if a.targets:
+        t_prov = Provenance(a.targets)
+        targets = iter_fingerprints(a.targets, model, provenance=t_prov)
+        exclude_self = False
+    else:
+        t_prov = q_prov
+        targets = iter(list(queries))
+        exclude_self = True
+
+    top = a.top
+    if top is None and a.cutoff is None:
+        top = 10                      # neither given: the documented default
+    if top is not None and top < 1:
+        raise SystemExit("--top must be at least 1")
+    if a.cutoff is not None and not 0.0 <= a.cutoff <= 1.0:
+        raise SystemExit("--cutoff must be between 0.0 and 1.0")
+
+    results = screen(queries, targets, top=top, cutoff=a.cutoff,
+                     exclude_self=exclude_self)
+
+    # Both sides have now streamed, so their declared conformer counts are
+    # known and can be compared. Warned, never blocked.
+    if t_prov is not q_prov:
+        warn_on_conformer_mismatch(q_prov, t_prov)
+
+    fh = open(a.out, "w") if a.out else sys.stdout
+    try:
+        write_tsv(fh, queries, results, q_prov=q_prov,
+                  t_prov=None if t_prov is q_prov else t_prov)
+    finally:
+        if a.out:
+            fh.close()
+
+    n, dt = results["_compared"], results["_seconds"]
+    print("%d queries x %d targets = %s comparisons in %.2f s  (%s/s)"
+          % (len(queries), n // max(len(queries), 1), format(n, ","), dt,
+             format(int(n / max(dt, 1e-9)), ",")), file=sys.stderr)
 
 
 def cmd_bits(a):
@@ -162,6 +232,23 @@ def main(argv=None):
     s.add_argument("--json", action="store_true",
                    help="one JSON object per record, metadata included")
     s.set_defaults(fn=cmd_pfp2bits)
+
+    s = sub.add_parser("screen",
+                       help="rank a target set against one or more queries")
+    s.add_argument("--queries", required=True,
+                   help="a .pfp/.pfp.gz, or a .smi to fingerprint first")
+    s.add_argument("--targets",
+                   help="a .pfp/.pfp.gz or .smi; omit to screen the queries "
+                        "against themselves, excluding self-matches")
+    s.add_argument("--top", type=int, default=None,
+                   help="keep this many best hits per query (default 10 when "
+                        "no --cutoff is given)")
+    s.add_argument("--cutoff", type=float, default=None,
+                   help="keep only hits scoring at or above this, as the "
+                        "original PharmTanList.x did")
+    s.add_argument("--out", help="write TSV here instead of stdout")
+    # --model is deliberately NOT required here: two .pfp inputs need none.
+    s.set_defaults(fn=cmd_screen)
 
     s = sub.add_parser("card", help="what the checkpoint says about itself")
     s.set_defaults(fn=cmd_card)
