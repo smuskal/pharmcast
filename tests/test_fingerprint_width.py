@@ -53,8 +53,8 @@ def test_top_pharmacophores_survive_a_round_trip():
         assert B.popcount(w) == 1
 
 
-def test_pharmacophore_lands_where_pfpkey_puts_it():
-    """pfpkey.c: fingerprint[i/32] |= 1 << (31 - i%32)."""
+def test_pharmacophore_lands_where_the_native_format_puts_it():
+    """Pharmacophore i sits in word i//32, counted from that word's top bit."""
     for j in (0, 31, 32, 10529, 10531, 10548):
         v = np.zeros(B.N_PHARM, dtype=bool); v[j] = True
         w = np.asarray(B.pack(v), dtype="<u4")

@@ -17,9 +17,8 @@ def test_packing_matches_the_reference_and_is_host_independent():
     """`pack` must produce the same integers the reference calculation would,
     on any machine.
 
-    pfpkey.c line 817 is the authority:
-
-        fingerprint[tempi/32] |= (1 << 31-tempi%32);
+    The native format is the authority: pharmacophore i sits in word i//32,
+    counted from the most significant bit of that word.
 
     so pharmacophore 0 is the TOP bit of word 0, and pharmacophore 31 is the
     low bit of word 0. The word values must not depend on host endianness.
@@ -82,7 +81,8 @@ def _internal_names():
     import base64
     raw = base64.b64decode(
         "UGhhcm1UYW5MaXN0LHBmcGFsbCxwZnByaWdpZCxNQVhEQixwaGFybXByaW50X25vUixw"
-        "aGFybXByaW50X1Jvbmx5LHBoYXJtcHJpbnRfc3ltbQ==").decode().split(",")
+        "aGFybXByaW50X1Jvbmx5LHBoYXJtcHJpbnRfc3ltbSxwZnBrZXksUGhhcm1UYW5MaXN0"
+        "Tm9MaW1pdA==").decode().split(",")
     return raw + [n.lower() for n in raw]
 
 

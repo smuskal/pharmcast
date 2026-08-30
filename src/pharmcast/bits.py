@@ -10,9 +10,8 @@ inverse.
 
 THE ORDERING RULE, which is what makes this non-obvious.
 
-`pfpkey.c` stores pharmacophore *i* as::
-
-    fingerprint[i / 32] |= 1 << (31 - i % 32);
+The native format stores pharmacophore *i* in word ``i // 32``, counting from
+the **most significant** bit of that word rather than the least.
 
 so within each word the pharmacophores run from the most significant bit *down*.
 Unpacking a little-endian word LSB-first reverses them inside the word, putting
@@ -38,9 +37,9 @@ N_INTS = 330
 N_BITS = N_INTS * 32     # packed word slots, storage only
 N_PHARM = 10549          # the fingerprint width
 
-# pfpkey.c stores pharmacophore i with fingerprint[i/32] |= 1 << (31 - i%32),
-# so within each word the pharmacophores run from the most significant bit
-# down. Unpacking a little endian word LSB first reverses them inside the word,
+# The native format stores pharmacophore i in word i//32, counting from the
+# most significant bit of that word, so within each word the pharmacophores run
+# from the top bit down. Unpacking a little endian word LSB first reverses them inside the word,
 # which means the 11 positions carrying no pharmacophore are 10528 to 10538,
 # not the top 11. PACK_POS gives the packed position of each pharmacophore.
 _J = np.arange(N_PHARM)

@@ -56,8 +56,9 @@ Two orderings are in play and both are correct in their own frame:
 | **pharmacophore number** | what `unpack`, `set_bits` and `pharmsim` return: column *j* is pharmacophore *j* |
 | **packed position** | where it sits in the word array: `(i//32)*32 + 31 - (i%32)` |
 
-`pfpkey.c` stores pharmacophore *i* as `fingerprint[i/32] |= 1 << (31 - i%32)`,
-so within a word the pharmacophores run from the most significant bit **down**.
+The native format stores pharmacophore *i* in word `i//32`, counting from the
+**most significant** bit of that word, so within a word the pharmacophores run
+from the top bit **down**.
 Unpacking little-endian LSB-first reverses them inside each word, which puts the
 eleven empty slots at packed **10528-10538** and real pharmacophores at packed
 **10539-10559**. `PACK_POS` is the mapping; **never slice `[:10549]`**.

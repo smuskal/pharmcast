@@ -63,7 +63,7 @@ def load_labels(path):
 
 
 def decode(words):
-    """MSB first inside each 32 bit word, exactly as pfpkey.c writes them."""
+    """MSB first inside each 32 bit word, as the native format writes them."""
     on = []
     for i in range(N_PHARM):
         if words[i // 32] & (1 << (31 - i % 32)):
