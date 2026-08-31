@@ -380,8 +380,9 @@ with these same 120 characters. The counts move with the model.*
 
 **PharmCast SCP v9**, measured on molecules the model cannot have seen. The
 catalogue and ChEMBL rows are every molecule fingerprinted after the training
-corpus was sealed. The peptide row is the **held-out peptide test set**, 1,200 loops built
-from PDB entries at resolution 1.8 Å or better and R-free 0.23 or better,
+corpus was sealed, so n differs between them because the corpora are built at
+different rates. The peptide row is the **sequence-novel peptide test set**, 500
+loops from PDB entries at resolution 1.8 Å or better and R-free 0.23 or better,
 excluding every entry used to build the training corpus and every loop whose
 amino acid **sequence** already appears in it. Those peptides are novel by
 sequence, not merely by canonical SMILES, and they are better resolved than the
@@ -389,16 +390,21 @@ training corpus, so a poor score there could not be blamed on soft coordinates.
 
 | Population | n | Median error | Within 0.05 | Pearson *r* | Ranking acc. |
 |---|---:|---:|---:|---:|---:|
-| Catalogue chemistry | 88,812 | 0.015 | 92% | 0.976 | 0.931 |
-| ChEMBL, activity backed | 46,900 | 0.026 | 76% | 0.936 | 0.889 |
-| Loop peptides | 1,200 | 0.018 | 87% | 0.982 | 0.947 |
+| Catalogue chemistry | 93,994 | 0.015 | 92% | 0.976 | 0.931 |
+| Loop peptides | 500 | 0.019 | 86% | 0.979 | 0.943 |
+| ChEMBL, activity backed | 49,200 | 0.026 | 76% | 0.936 | 0.889 |
+| **All three combined** | | **0.019** | **85%** | **0.972** | |
 | *Reference against itself* | | *0.006* | | *0.995* | *ceiling* |
 
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
 
-Per fingerprint rather than per pair: **median MCC 0.911** on catalogue
-chemistry, with a 10th percentile of 0.842 and a 90th of 0.948.
+ChEMBL is the weakest population: error is about 50% higher than on catalogue
+chemistry and roughly one pair in five falls outside 0.05. Error rises to
+**0.041 above 600 Da**, where corpus coverage is thinnest.
+
+Per fingerprint rather than per pair: **median MCC 0.911** on all 93,994
+catalogue molecules fingerprinted after the snapshot was sealed.
 
 *These are the figures in the preprint, which is the ground truth for numbers
 and figures alike.*
@@ -420,8 +426,8 @@ the three.*
 
 *How closely each individual predicted fingerprint matches the real one, as the
 Matthews correlation coefficient per molecule. **SCP v9**, median 0.911 on
-catalogue chemistry, 0.863 on ChEMBL and 0.917 on the held-out peptide test
-set.*
+catalogue chemistry on all 93,994 molecules fingerprinted after the snapshot was
+sealed.*
 
 ### It is not re-deriving 2D similarity
 
