@@ -617,8 +617,50 @@ Model.</i> <b>2010</b>, <i>50</i>, 742-754.</li>
 <li>Enamine building blocks, in-stock catalogue. Enamine Ltd.
 <span class="mono">https://enamine.net</span></li>
 <li>RCSB Protein Data Bank. <span class="mono">https://www.rcsb.org</span></li>
+<li>Zdrazil, B.; Felix, E.; Hunter, F.; Manners, E. J.; Blackshaw, J.;
+Corbett, S.; de Veij, M.; Ioannidis, H.; Mendez Lopez, D.; Mosquera, J. F.;
+Magarinos, M. P.; Bosc, N.; Arcila, R.; Kizil&ouml;ren, T.; Gaulton, A.;
+Bento, A. P.; Adasme, M. F.; Monecke, P.; Landrum, G. A.; Leach, A. R.
+The ChEMBL Database in 2023: a drug discovery platform spanning multiple
+bioactivity data types and time periods. <i>Nucleic Acids Res.</i>
+<b>2024</b>, <i>52</i>, D1180-D1192. ChEMBL&nbsp;37, release 2026-05-01,
+used here. <span class="mono">https://www.ebi.ac.uk/chembl</span></li>
 </ol>
+
+<h3>Data and provenance</h3>
+<p>Every number in this document is measured on molecules the model was not
+trained on, and each is drawn from a named evaluation file rather than
+transcribed. The three evaluation populations are distinct and are never
+pooled into a single headline:</p>
+<table>
+<caption><b>Table 8.</b> What each reported population is, and how it was held
+out. Counts are for the model reported here.</caption>
+<thead><tr><th>Population</th><th>How it is held out</th>
+<th class="n">Source</th></tr></thead>
+<tbody>
+<tr><td>Catalogue chemistry</td>
+<td>Every collection molecule fingerprinted <i>after</i> the training corpus
+was sealed, so none could have been seen. Held out by time, not by
+sampling.</td><td class="n">[8]</td></tr>
+<tr><td>ChEMBL, activity backed</td>
+<td>Every ChEMBL molecule fingerprinted after the seal, each carrying a
+measured activity value.</td><td class="n">[11]</td></tr>
+<tr><td>Loop peptides</td>
+<td>A dedicated test set, never trained on: structures at resolution
+1.8&nbsp;&Aring; or better and free R-factor 0.23 or better, excluding every
+entry used to build the training corpus <i>and</i> every loop whose amino acid
+<b>sequence</b> already appears in it. Novel by sequence rather than merely by
+canonical structure, and better resolved than the training corpus, so a poor
+score here could not be attributed to soft coordinates.</td>
+<td class="n">[10]</td></tr>
+</tbody></table>
+<p>The peptide distinction matters because the loop corpus is nearly complete.
+What remains outside it is the residue of a finished build rather than a sample
+of peptide chemistry, and scoring on that residue understates the model
+substantially. The dedicated test set is what the peptide figures here are
+measured on.</p>
 
 <p class="small" style="margin-top:5mm">All figures and tables in this document
 are generated from the evaluation files at build time; no value is transcribed by
-hand.</p>
+hand. The conformer protocol, the fixed seed and the fingerprint width are
+identical for every training and every evaluation molecule.</p>
