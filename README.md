@@ -397,29 +397,6 @@ training corpus, so a poor score there could not be blamed on soft coordinates.
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
 
-### v9 against v8, on the same molecules
-
-v9 and v8 were measured on the **identical held-out molecules**, fingerprinted
-after v9's corpus was sealed so that neither model had seen them. That is what
-makes this a comparison rather than two separate evaluations, and it is the only
-form in which the two should be read against each other.
-
-| Population | n | v9 | v8 |
-|---|---:|---:|---:|
-| Catalogue chemistry | 61,394 | **0.911** | 0.909 |
-| ChEMBL, activity backed | 31,400 | **0.863** | 0.849 |
-| Loop peptides, held-out test set | 1,200 | **0.917** | 0.916 |
-
-*Median Matthews correlation per molecule. v9 improves on all three
-populations, ChEMBL by the widest margin, which is where the corpus grew most:
-ChEMBL went from 635,514 molecules to 947,414.*
-
-The peptide row uses the sequence-novel test set described under Accuracy, not
-the residue left outside the training corpus. The loop corpus is 98.5%
-fingerprinted, so that residue is now only a few hundred molecules and is not a
-representative sample of peptide chemistry; the test set is what it was built
-for.
-
 Per fingerprint rather than per pair: **median MCC 0.911** on catalogue
 chemistry, with a 10th percentile of 0.842 and a 90th of 0.948.
 
@@ -490,9 +467,9 @@ being built, so the training set grows with the version number.
 
 ![Stacked bars of training molecules per model version from SP v2 to SCP v9, split into screening collection, ChEMBL and loop peptides, rising from 1,724,833 to 5,126,378](assets/corpus-trajectory.jpg)
 
-*Training molecules per release, by source. SCP v9 trains on 5,126,378, up from
-4,239,599 for v8. ChEMBL enters at SCP v5 and is the fastest growing of the
-three.*
+*Training molecules per release, by source. SCP v9 trains on 5,126,378. The
+corpus is still being built, so each release is a larger snapshot of the same
+three sources.*
 
 **What that buys.** Every model scored on the same 9,975 held-out molecules, so
 the curve is a like-for-like comparison across the whole family rather than
@@ -500,9 +477,9 @@ eight separate evaluations.
 
 ![Median MCC against training set size, one point per model from SP v2 to SCP v9, rising from 0.890 to 0.910 on a common held-out set](assets/agreement-vs-training-size.jpg)
 
-*Agreement with the real fingerprint against training set size. The step at
-SCP v7 is where ChEMBL first carries real weight in the corpus. Returns are
-real but diminishing: the last 1.4 million molecules bought 0.002.*
+*Agreement with the real fingerprint against training set size, every point
+scored on the same 9,975 held-out molecules. Returns from corpus growth are
+real but diminishing.*
 
 Where the three corpora stand today:
 
