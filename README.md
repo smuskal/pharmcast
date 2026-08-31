@@ -485,6 +485,25 @@ A model card that hides its failure mode is worse than no model card.
 
 ## Training corpora
 
+**What went into each model.** Every release is a snapshot of a corpus still
+being built, so the training set grows with the version number.
+
+![Stacked bars of training molecules per model version from SP v2 to SCP v9, split into screening collection, ChEMBL and loop peptides, rising from 1,724,833 to 5,126,378](assets/corpus-trajectory.jpg)
+
+*Training molecules per release, by source. SCP v9 trains on 5,126,378, up from
+4,239,599 for v8. ChEMBL enters at SCP v5 and is the fastest growing of the
+three.*
+
+**What that buys.** Every model scored on the same 9,975 held-out molecules, so
+the curve is a like-for-like comparison across the whole family rather than
+eight separate evaluations.
+
+![Median MCC against training set size, one point per model from SP v2 to SCP v9, rising from 0.890 to 0.910 on a common held-out set](assets/agreement-vs-training-size.jpg)
+
+*Agreement with the real fingerprint against training set size. The step at
+SCP v7 is where ChEMBL first carries real weight in the corpus. Returns are
+real but diminishing: the last 1.4 million molecules bought 0.002.*
+
 Where the three corpora stand today:
 
 | Corpus | At the SCP v9 snapshot | Expected total | Complete |
