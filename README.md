@@ -18,13 +18,13 @@ PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It
 removes the conformational stage rather than accelerating it, which is why the
 speed-up is of a different order to what optimisation normally buys.
 
-**[Try it now at pharmcast.ai](https://pharmcast.ai/)** — no install, no email.
+**[Try it now at pharmcast.ai](https://pharmcast.ai/)**, no install, no email.
 
-- **[Fingerprint a molecule](https://pharmcast.ai/fingerprint.html)** — draw or
+- **[Fingerprint a molecule](https://pharmcast.ai/fingerprint.html)**: draw or
   paste one structure and get its complete predicted fingerprint: which of the
   10,549 pharmacophores are set, what each is as a feature triplet, and the
   fingerprint itself ready to copy in both packed 32-bit and `0`/`1` form.
-- **[Compare two molecules](https://pharmcast.ai/compare.html)** — PharmSim
+- **[Compare two molecules](https://pharmcast.ai/compare.html)**: PharmSim
   similarity between two structures.
 
 To decode a `.pfp` locally, see [`tools/pfp-decode`](tools/pfp-decode).
@@ -65,8 +65,8 @@ what scaffold hopping looks like from inside the descriptor.*
 ensemble and runs the reference calculation over it. PharmCast predicts the same
 ensemble record from the two dimensional structure and skips the ensemble
 entirely. Panel E is saquinavir against indinavir, two HIV-1 protease
-inhibitors, scored by PharmCast SCP v8: the reference calculation gives a
-pharmacophoric similarity of 0.841 and PharmCast predicts 0.897, where a two
+inhibitors, scored by PharmCast SCP v9: the reference calculation gives a
+pharmacophoric similarity of 0.841 and PharmCast predicts 0.873, where a two
 dimensional Morgan Tanimoto puts the same pair at 0.303. That gap is the whole
 point of the descriptor. The network is 2,059 inputs, hidden layers of 1,024 and
 512, and one output unit per pharmacophore, 10,549 in total, for 8,045,877
@@ -108,7 +108,8 @@ checksummed, from **<https://pharmcast.ai/models>**.
 
 | Model | Endpoint | SHA-256 |
 |---|---|---|
-| **PharmCast SCP v8** (current) | [`/models/pharmcast_scp_v8.pt`](https://pharmcast.ai/models/pharmcast_scp_v8.pt) | `d1389037…ac8f42ab5` |
+| **PharmCast SCP v9** (current) | [`/models/pharmcast_scp_v9.pt`](https://pharmcast.ai/models/pharmcast_scp_v9.pt) | `1c0be82e…209699c6` |
+| PharmCast SCP v8 (superseded) | [`/models/pharmcast_scp_v8.pt`](https://pharmcast.ai/models/pharmcast_scp_v8.pt) | `d1389037…ac8f42ab5` |
 | *(all releases, append-only)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 Superseded releases move to the **[archive](https://pharmcast.ai/models/#archive)**
@@ -117,21 +118,22 @@ on the model page. They stay downloadable and their checksums stay in
 not what new work should use.
 
 ```bash
-curl -O https://pharmcast.ai/models/pharmcast_scp_v8.pt
+curl -O https://pharmcast.ai/models/pharmcast_scp_v9.pt
 curl -O https://pharmcast.ai/models/SHA256SUMS
 shasum -a 256 -c SHA256SUMS                      # macOS / Linux
-certutil -hashfile pharmcast_scp_v8.pt SHA256    # Windows
+certutil -hashfile pharmcast_scp_v9.pt SHA256    # Windows
 ```
 
-**SCP v8 is the current model**, and everything below describes it. Superseded
-checkpoints are not distributed; their checksums remain in `SHA256SUMS`, which
-is append-only, so a copy someone already holds still verifies.
+**SCP v9 is the current model**, and everything below describes it. Superseded
+checkpoints stay downloadable and their checksums stay in `SHA256SUMS`, which is
+append-only, so a result computed against one remains reproducible.
 
-It is trained on a sealed snapshot of 4,282,423 molecules — 3,579,209 screening
-collection, 635,514 ChEMBL, 67,700 loop peptides — of which 1% was held out as a
-molecular-weight-stratified stopping set, leaving 4,239,599 for gradient
-updates. 2,059 inputs, hidden layers of 1,024 and 512, 10,549 outputs,
-8,045,877 parameters.
+It is trained on a sealed snapshot of 5,178,160 molecules: 4,099,846 screening
+collection, 947,414 ChEMBL, 130,900 loop peptides, of which 1% was held out as a
+molecular-weight-stratified stopping set, leaving 5,126,378 for gradient
+updates. It ran 100 epochs on the Apple GPU in 353 minutes and the weights of
+epoch 73 were restored. 2,059 binary2048 inputs, hidden layers of 1,024 and 512,
+batch 256, learning rate 0.001, 10,549 outputs, 8,045,877 parameters.
 
 **A published checkpoint is never replaced in place.** A new release is added
 beside the old ones and `SHA256SUMS` is append-only, so a script pinned to a URL
@@ -145,21 +147,21 @@ Everything below is the command line. Install, download a model, run.
 ```bash
 pip install -e .
 # weights are served from the site, not committed; verify what you got
-curl -LO https://pharmcast.ai/models/pharmcast_scp_v8.pt
+curl -LO https://pharmcast.ai/models/pharmcast_scp_v9.pt
 curl -LO https://pharmcast.ai/models/SHA256SUMS
-shasum -a 256 -c SHA256SUMS 2>/dev/null | grep pharmcast_scp_v8
+shasum -a 256 -c SHA256SUMS 2>/dev/null | grep pharmcast_scp_v9
 ```
 
 Then fingerprint a file of SMILES:
 
 ```bash
-pharmcast --model pharmcast_scp_v8.pt fp --in examples/data/molecules.smi --out molecules.pfp
+pharmcast --model pharmcast_scp_v9.pt fp --in examples/data/molecules.smi --out molecules.pfp
 ```
 
 Compare two molecules:
 
 ```bash
-pharmcast --model pharmcast_scp_v8.pt sim \
+pharmcast --model pharmcast_scp_v9.pt sim \
   "C[C@]12CC[C@H]3[C@H](CCc4cc(O)ccc34)[C@@H]1CC[C@@H]2O" \
   'CC/C(=C(/CC)c1ccc(O)cc1)c1ccc(O)cc1'
 ```
@@ -167,7 +169,7 @@ pharmcast --model pharmcast_scp_v8.pt sim \
 Screen a library for nearest neighbours:
 
 ```bash
-pharmcast --model pharmcast_scp_v8.pt screen \
+pharmcast --model pharmcast_scp_v9.pt screen \
   --queries queries.smi --targets library.smi --top 10
 ```
 
@@ -180,14 +182,14 @@ pharmcast screen --queries queries.pfp --targets library.pfp --top 10
 See the bits:
 
 ```bash
-pharmcast --model pharmcast_scp_v8.pt bits "CC(=O)Nc1ccc(O)cc1" --width 120
+pharmcast --model pharmcast_scp_v9.pt bits "CC(=O)Nc1ccc(O)cc1" --width 120
 pfp2bits molecules.pfp --format positions
 ```
 
 And ask the model what it is:
 
 ```bash
-pharmcast --model pharmcast_scp_v8.pt card
+pharmcast --model pharmcast_scp_v9.pt card
 ```
 
 ## Screening a library
@@ -214,7 +216,7 @@ query_name  query_smiles  rank  target_name  target_smiles  pharmtan  query_bits
 ```
 
 Ties are broken by target name, so the ordering is reproducible across runs and
-machines. Names and SMILES are written **in full** — the original truncated
+machines. Names and SMILES are written **in full**. The original truncated
 names to 20 characters, and a clipped identifier is not an identifier.
 
 ### It works on any `.pfp`, whatever produced it
@@ -253,7 +255,7 @@ guessing which side was which:
 **One honest hazard when mixing them.** A 100-conformer ensemble compared
 against a single-conformer fingerprint scores lower for that reason alone. When
 the two sides declare different `nconf`, the command warns on stderr, naming
-both values, and continues — the comparison is meaningful, it just must not be
+both values, and continues. The comparison is meaningful, it just must not be
 read as though both sides had the same conformational coverage.
 
 ### Scale
@@ -266,7 +268,7 @@ targets one query row alone is 32 MB.
 
 Throughput is reported to stderr on completion.
 
-The coefficient is exactly the one `pharmtan` computes pairwise — same popcount
+The coefficient is exactly the one `pharmtan` computes pairwise, same popcount
 over the same packed words, vectorised across a chunk. `tests/test_screen.py`
 asserts that rather than asking you to take it on trust.
 
@@ -277,11 +279,11 @@ path and prints its own output; nothing needs editing first.
 
 ```bash
 cd examples
-./01_fingerprint.sh  /path/to/pharmcast_scp_v8.pt   # SMILES file -> native .pfp
-./02_similarity.sh   /path/to/pharmcast_scp_v8.pt   # 3D vs 2D similarity, three pairs
-./03_bits.sh         /path/to/pharmcast_scp_v8.pt   # fingerprints -> ones and zeros
-./04_model_card.sh   /path/to/pharmcast_scp_v8.pt   # corpus and applicability domain
-./05_screen.sh       /path/to/pharmcast_scp_v8.pt   # rank a library against queries
+./01_fingerprint.sh  /path/to/pharmcast_scp_v9.pt   # SMILES file -> native .pfp
+./02_similarity.sh   /path/to/pharmcast_scp_v9.pt   # 3D vs 2D similarity, three pairs
+./03_bits.sh         /path/to/pharmcast_scp_v9.pt   # fingerprints -> ones and zeros
+./04_model_card.sh   /path/to/pharmcast_scp_v9.pt   # corpus and applicability domain
+./05_screen.sh       /path/to/pharmcast_scp_v9.pt   # rank a library against queries
 ```
 
 `02_similarity.sh` is the one to run first. It scores three pairs **both ways**,
@@ -290,12 +292,12 @@ alone does not tell you anything:
 
 ```
                                       3D (PharmCast)   2D (Morgan)
-  estradiol / diethylstilbestrol      pharmacophore 0.680    2D 0.163
-  aspirin / salicylate                pharmacophore 0.358    2D 0.448
+  estradiol / diethylstilbestrol      pharmacophore 0.821    2D 0.163
+  aspirin / salicylate                pharmacophore 0.348    2D 0.448
   caffeine / ibuprofen                pharmacophore 0.000    2D 0.087
 ```
 
-*Numbers above are real output from `02_similarity.sh` on **SCP v8**. They move
+*Numbers above are real output from `02_similarity.sh` on **SCP v9**. They move
 with the model, so if your output differs, check the checkpoint's sha256 and
 your RDKit version before anything else.*
 
@@ -361,14 +363,14 @@ number derived from different typing would be worse than writing none.
 
 ```
 $ pfp2bits library.pfp --width 120
->paracetamol  set=47/10549  version=v1.6  mw=151.2  heavy=11  bits=47  rotb=1  nconf=100
+>paracetamol  set=50/10549  version=v1.6  mw=151.2  heavy=11  bits=47  rotb=1  nconf=100
 111000101000100001000000000000000000001000000000000000000000000000000000000000000000111000110100011000001000000000000000
 ```
 
 It loads no model, because the fingerprints are already in the file.
 
-*Bit counts above are **SCP v8**. `--width 120` prints the first 120 of 10,549
-pharmacophores, so it is a prefix and not a short fingerprint — the same
+*Bit counts above are **SCP v9**. `--width 120` prints the first 120 of 10,549
+pharmacophores, so it is a prefix and not a short fingerprint. The same
 molecule on <https://pharmcast.ai/fingerprint.html> prints all 10,549 and begins
 with these same 120 characters. The counts move with the model.*
 
@@ -376,23 +378,50 @@ with these same 120 characters. The counts move with the model.*
 
 ## Accuracy
 
-**PharmCast SCP v8**, measured on every molecule fingerprinted after its
-training corpus was sealed, so the model cannot have seen them: 96,916
-catalogue compounds, 63,500 ChEMBL and 11,500 loop peptides.
+**PharmCast SCP v9**, measured on molecules the model cannot have seen. The
+catalogue and ChEMBL rows are every molecule fingerprinted after the training
+corpus was sealed. The peptide row is the **held-out peptide test set**, 1,200 loops built
+from PDB entries at resolution 1.8 Å or better and R-free 0.23 or better,
+excluding every entry used to build the training corpus and every loop whose
+amino acid **sequence** already appears in it. Those peptides are novel by
+sequence, not merely by canonical SMILES, and they are better resolved than the
+training corpus, so a poor score there could not be blamed on soft coordinates.
 
 | Population | n | Median error | Within 0.05 | Pearson *r* | Ranking acc. |
 |---|---:|---:|---:|---:|---:|
-| Catalogue chemistry | 96,916 | 0.016 | 91% | 0.975 | 0.930 |
-| Loop peptides | 11,500 | 0.019 | 84% | 0.979 | 0.944 |
-| ChEMBL, activity backed | 63,500 | 0.024 | 78% | 0.937 | 0.890 |
-| **All three combined** | **171,916** | **0.019** | **85%** | **0.972** | |
+| Catalogue chemistry | 88,812 | 0.015 | 92% | 0.976 | 0.931 |
+| ChEMBL, activity backed | 46,900 | 0.026 | 76% | 0.936 | 0.889 |
+| Loop peptides | 1,200 | 0.018 | 87% | 0.982 | 0.947 |
 | *Reference against itself* | | *0.006* | | *0.995* | *ceiling* |
 
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
 
-Per fingerprint rather than per pair: **median MCC 0.909** on catalogue
-chemistry, with a 10th percentile of 0.840 and a 90th of 0.947.
+### v9 against v8, on the same molecules
+
+v9 and v8 were measured on the **identical held-out molecules**, fingerprinted
+after v9's corpus was sealed so that neither model had seen them. That is what
+makes this a comparison rather than two separate evaluations, and it is the only
+form in which the two should be read against each other.
+
+| Population | n | v9 | v8 |
+|---|---:|---:|---:|
+| Catalogue chemistry | 61,394 | **0.911** | 0.909 |
+| ChEMBL, activity backed | 31,400 | **0.863** | 0.849 |
+| Loop peptides, held-out test set | 1,200 | **0.917** | 0.916 |
+
+*Median Matthews correlation per molecule. v9 improves on all three
+populations, ChEMBL by the widest margin, which is where the corpus grew most:
+ChEMBL went from 635,514 molecules to 947,414.*
+
+The peptide row uses the sequence-novel test set described under Accuracy, not
+the residue left outside the training corpus. The loop corpus is 98.5%
+fingerprinted, so that residue is now only a few hundred molecules and is not a
+representative sample of peptide chemistry; the test set is what it was built
+for.
+
+Per fingerprint rather than per pair: **median MCC 0.911** on catalogue
+chemistry, with a 10th percentile of 0.842 and a 90th of 0.948.
 
 *These are the figures in the preprint, which is the ground truth for numbers
 and figures alike.*
@@ -403,18 +432,19 @@ reference calculation agrees with itself an order of magnitude more tightly than
 PharmCast agrees with it. **The ground truth is not the problem**, and 0.006 is
 the floor no surrogate can beat.
 
-![Predicted against real pairwise PFP Tanimoto for PharmCast SCP v8, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
+![Predicted against real pairwise PFP Tanimoto for PharmCast SCP v9, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
 
-*PharmCast **SCP v8**. Predicted against real pairwise similarity on held out
+*PharmCast **SCP v9**. Predicted against real pairwise similarity on held out
 molecules, by population. The dashed line is exact agreement. Catalogue
 chemistry and loop peptides sit tight to it; ChEMBL compounds are the widest of
 the three.*
 
-![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast SCP v8](assets/per-molecule-mcc.jpg)
+![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast SCP v9](assets/per-molecule-mcc.jpg)
 
 *How closely each individual predicted fingerprint matches the real one, as the
-Matthews correlation coefficient per molecule. **SCP v8**, median 0.909 on
-catalogue chemistry; 0.894 on loop peptides and 0.868 on ChEMBL.*
+Matthews correlation coefficient per molecule. **SCP v9**, median 0.911 on
+catalogue chemistry, 0.863 on ChEMBL and 0.917 on the held-out peptide test
+set.*
 
 ### It is not re-deriving 2D similarity
 
@@ -423,8 +453,8 @@ catalogue chemistry; 0.894 on loop peptides and 0.868 on ChEMBL.*
 *Predicted against real pairwise similarity, coloured by two dimensional Morgan
 similarity, green for the most dissimilar pairs through red for the least.
 Agreement does not depend on 2D similarity, so the model is predicting three
-dimensional feature geometry rather than restating its own input. PharmCast **SCP v8** on held-out molecules stratified into five 2D bands. Pearson within the bands is 0.973, 0.976, 0.978, 0.980 and
-0.975 from the least 2D similar to the most. That flatness is the claim the
+dimensional feature geometry rather than restating its own input. PharmCast **SCP v9** on held-out molecules stratified into five 2D bands. Pearson within the bands is 0.973, 0.975, 0.976, 0.980 and
+0.970 from the least 2D similar to the most. That flatness is the claim the
 panel makes.*
 
 ## Applicability domain: read this before trusting a score
@@ -457,17 +487,17 @@ A model card that hides its failure mode is worse than no model card.
 
 Where the three corpora stand today:
 
-| Corpus | At the SCP v8 snapshot | Expected total | Complete |
+| Corpus | At the SCP v9 snapshot | Expected total | Complete |
 |---|---:|---:|---:|
-| Screening collection | 3,579,209 | 4,617,292 | 77.5% |
-| ChEMBL | 635,514 | 2,737,190 † | 23.2% |
-| Loop peptides | 67,700 | 132,878 | 50.9% |
-| **All three** | **4,282,423** | **7,487,360** | **57.2%** |
+| Screening collection | 4,099,846 | 4,617,292 | 88.8% |
+| ChEMBL | 947,414 | 2,737,190 † | 34.6% |
+| Loop peptides | 130,900 | 132,878 | 98.5% |
+| **All three** | **5,178,160** | **7,487,360** | **69.2%** |
 
-![Bar chart of each corpus at the SCP v8 sealed snapshot against the expected total: screening collection 77.5%, ChEMBL 23.2%, loop peptides 50.9%](assets/corpus-progress.jpg)
+![Bar chart of each corpus at the SCP v9 sealed snapshot against the expected total: screening collection 88.8%, ChEMBL 34.6%, loop peptides 98.5%](assets/corpus-progress.jpg)
 
-**The finished training set is expected to be 7,487,360 molecules**, and SCP v8
-was trained on 4,282,423 of them. **Well over half of it is fingerprinted
+**The finished training set is expected to be 7,487,360 molecules**, and SCP v9
+was trained on 5,178,160 of them. **Over two thirds of it is fingerprinted
 today.** The growth is not evenly distributed: the screening
 collection is most of the mass, while ChEMBL is the least complete and grows the
 most in proportion. Every molecule is fingerprinted with
@@ -488,34 +518,34 @@ same 6,000-molecule sample from each, because nearest-neighbour similarity rises
 with sample size and unequal samples cannot be compared.* ChEMBL selection is still running, so its expected
 total is an estimate and will move.
 
-SCP v8 trained on a 4,282,423-molecule snapshot, of which 4,239,599 were used
-for gradient updates and 42,824 reserved for early stopping:
+SCP v9 trained on a 5,178,160-molecule snapshot, of which 5,126,378 were used
+for gradient updates and 51,782 reserved for early stopping:
 
 | Corpus | Molecules | Share |
 |---|---:|---:|
-| Screening collection | 3,579,209 | 83.58% |
-| ChEMBL, activity backed | 635,514 | 14.84% |
-| Protein loop peptides | 67,700 | 1.58% |
+| Screening collection | 4,099,846 | 79.18% |
+| ChEMBL, activity backed | 947,414 | 18.30% |
+| Protein loop peptides | 130,900 | 2.53% |
 
 Its output layer is 10,549 wide, one per pharmacophore.
 
 ### The training set is still being built
 
 **This is work in progress, not a finished system.** All three corpora are still
-being fingerprinted. SCP v8 is the current model, trained on a
-4,282,423-molecule snapshot taken along the way against an expected final
+being fingerprinted. SCP v9 is the current model, trained on a
+5,178,160-molecule snapshot taken along the way against an expected final
 corpus of about 7,493,816.
 
-**Work continues toward v9 and beyond.** No model here is a release
+**Work continues beyond v9.** No model here is a release
 candidate, and none will be until the corpora are complete. A preprint
 describing the finished work is being written.
 
 Each version is published beside its predecessors and never replaces one, so a
 result computed against a given version stays reproducible.
 
-**SCP v8 reserves a stopping split** of 42,824 molecules, 1% of the snapshot
+**SCP v9 reserves a stopping split** of 51,782 molecules, 1% of the snapshot
 stratified by molecular weight, used only for early stopping, and the released
-weights are the epoch-66 ones restored after the run.
+weights are the epoch-73 ones restored after the run.
 Accuracy is then measured on a separate population: molecules fingerprinted
 *after* the training corpus was sealed, which the model cannot have seen.
 
@@ -577,7 +607,7 @@ attribution those sources ask for.
 ## White paper
 
 The full method description, with the corpus construction, the evaluation
-protocol and every figure, current on **SCP v8**.
+protocol and every figure, current on **SCP v9**.
 
 **Read it at <https://pharmcast.ai/whitepaper/>**, or open
 [`docs/whitepaper.pdf`](docs/whitepaper.pdf), which GitHub renders inline.
