@@ -65,7 +65,7 @@ what scaffold hopping looks like from inside the descriptor.*
 ensemble and runs the reference calculation over it. PharmCast predicts the same
 ensemble record from the two dimensional structure and skips the ensemble
 entirely. Panel E is saquinavir against indinavir, two HIV-1 protease
-inhibitors, scored by PharmCast SCP v10: the reference calculation gives a
+inhibitors, scored by PharmCast version 10: the reference calculation gives a
 pharmacophoric similarity of 0.841 and PharmCast predicts 0.843, where a two
 dimensional Morgan Tanimoto puts the same pair at 0.303. That gap is the whole
 point of the descriptor. The network is 2,059 inputs, hidden layers of 1,024 and
@@ -108,9 +108,9 @@ checksummed, from **<https://pharmcast.ai/models>**.
 
 | Model | Endpoint | SHA-256 |
 |---|---|---|
-| **PharmCast SCP v10** (current) | [`/models/pharmcast_scp_v10.pt`](https://pharmcast.ai/models/pharmcast_scp_v10.pt) | `b25ad356…d36284cf` |
-| PharmCast SCP v9 | [`/models/pharmcast_scp_v9.pt`](https://pharmcast.ai/models/pharmcast_scp_v9.pt) | `1c0be82e…209699c6` |
-| PharmCast SCP v8 | [`/models/pharmcast_scp_v8.pt`](https://pharmcast.ai/models/pharmcast_scp_v8.pt) | `d1389037…ac8f42ab5` |
+| **PharmCast version 10** (current) | [`/models/pharmcast_scp_v10.pt`](https://pharmcast.ai/models/pharmcast_scp_v10.pt) | `b25ad356…d36284cf` |
+| PharmCast version 9 | [`/models/pharmcast_scp_v9.pt`](https://pharmcast.ai/models/pharmcast_scp_v9.pt) | `1c0be82e…209699c6` |
+| PharmCast version 8 | [`/models/pharmcast_scp_v8.pt`](https://pharmcast.ai/models/pharmcast_scp_v8.pt) | `d1389037…ac8f42ab5` |
 | *(all releases, append-only)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 Superseded releases move to the **[archive](https://pharmcast.ai/models/#archive)**
@@ -125,11 +125,11 @@ shasum -a 256 -c SHA256SUMS                      # macOS / Linux
 certutil -hashfile pharmcast_scp_v10.pt SHA256    # Windows
 ```
 
-**SCP v10 is the current model**, and everything below describes it. Earlier
+**version 10 is the current model**, and everything below describes it. Earlier
 checkpoints stay downloadable and their checksums stay in `SHA256SUMS`, which is
 append-only, so a result computed against one remains reproducible.
 
-It is trained on a sealed snapshot of 5,946,696 molecules: 4,609,488 screening
+It is trained on a frozen snapshot of 5,946,696 molecules: 4,609,488 screening
 collection, 1,214,214 activity-backed ChEMBL from 142 to 1000 Da, and 122,994
 loop peptides. 1% was held out as a molecular-weight-stratified stopping set,
 leaving 5,887,229 for gradient updates. It ran 100 epochs and the weights of
@@ -283,7 +283,7 @@ cd examples
 ./01_fingerprint.sh  /path/to/pharmcast_scp_v10.pt   # SMILES file -> native .pfp
 ./02_similarity.sh   /path/to/pharmcast_scp_v10.pt   # 3D vs 2D similarity, three pairs
 ./03_bits.sh         /path/to/pharmcast_scp_v10.pt   # fingerprints -> ones and zeros
-./04_model_card.sh   /path/to/pharmcast_scp_v10.pt   # corpus and applicability domain
+./04_model_card.sh   /path/to/pharmcast_scp_v10.pt   # training set and applicability domain
 ./05_screen.sh       /path/to/pharmcast_scp_v10.pt   # rank a library against queries
 ```
 
@@ -298,7 +298,7 @@ alone does not tell you anything:
   caffeine / ibuprofen                pharmacophore 0.000    2D 0.087
 ```
 
-*Numbers above are real output from `02_similarity.sh` on **SCP v10**. They move
+*Numbers above are real output from `02_similarity.sh` on **version 10**. They move
 with the model, so if your output differs, check the checkpoint's sha256 and
 your RDKit version before anything else.*
 
@@ -370,7 +370,7 @@ $ pfp2bits library.pfp --width 120
 
 It loads no model, because the fingerprints are already in the file.
 
-*Bit counts above are **SCP v10**. `--width 120` prints the first 120 of 10,549
+*Bit counts above are **version 10**. `--width 120` prints the first 120 of 10,549
 pharmacophores, so it is a prefix and not a short fingerprint. The same
 molecule on <https://pharmcast.ai/fingerprint.html> prints all 10,549 and begins
 with these same 120 characters. The counts move with the model.*
@@ -379,14 +379,12 @@ with these same 120 characters. The counts move with the model.*
 
 ## Accuracy
 
-**PharmCast SCP v10**, measured on molecules the model cannot have seen.
+**PharmCast version 10**, measured on molecules the model cannot have seen.
 
-The peptide row is the **reserved peptide test set**: 13,500 loops held back from
-the corpus and never trained on. It is the largest and most stable of the three
+The peptide row is the **reserved peptide test set**: 13,500 loops held back from the training set and never trained on. It is the largest and most stable of the three
 populations and the one to read first.
 
-The catalogue and ChEMBL rows are every molecule fingerprinted after the training
-corpus was sealed. **Catalogue fingerprinting is now complete at 99.83% of the
+The catalogue and ChEMBL rows are every molecule fingerprinted after the training set was frozen. **Catalogue fingerprinting is now complete at 99.83% of the
 eligible set**, so only 13,373 catalogue molecules remain outside training. That
 residue is the tail of a finished build rather than a representative sample, and
 its n is stated for that reason.
@@ -403,7 +401,7 @@ way the reference does, exact ties excluded.
 
 ChEMBL is the weakest population: error is about 50% higher than on catalogue
 chemistry and roughly one pair in five falls outside 0.05. Error rises to
-**0.041 above 600 Da**, where corpus coverage is thinnest.
+**0.041 above 600 Da**, where coverage of the training set is thinnest.
 
 Per fingerprint rather than per pair: **median MCC 0.914** on the 13,500 molecule
 reserved peptide test set, with a 10th percentile of 0.846 and a 90th of 0.958.
@@ -417,41 +415,40 @@ reference calculation agrees with itself an order of magnitude more tightly than
 PharmCast agrees with it. **The ground truth is not the problem**, and 0.006 is
 the floor no surrogate can beat.
 
-![Predicted against real pairwise PFP Tanimoto for PharmCast SCP v10, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
+![Predicted against real pairwise PFP Tanimoto for PharmCast version 10, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
 
-*PharmCast **SCP v10**. Predicted against real pairwise similarity on held out
+*PharmCast **version 10**. Predicted against real pairwise similarity on held out
 molecules, by population. The dashed line is exact agreement. Catalogue
 chemistry and loop peptides sit tight to it; ChEMBL compounds are the widest of
 the three.*
 
-![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast SCP v10](assets/per-molecule-mcc.jpg)
+![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast version 10](assets/per-molecule-mcc.jpg)
 
 *How closely each individual predicted fingerprint matches the real one, as the
-Matthews correlation coefficient per molecule. **SCP v10**, median 0.914 on the
+Matthews correlation coefficient per molecule. **version 10**, median 0.914 on the
 13,500 molecule reserved peptide test set.*
 
 ### It is not re-deriving 2D similarity
 
-![The same pairs coloured by 2D Morgan similarity, with Pearson essentially unchanged across every 2D similarity band](assets/not-2d-similarity.jpg)
+![Predicted against reference pharmacophore similarity for 25,091 unique pairs, each point coloured by the two dimensional Morgan similarity of that pair, with Pearson reported within each of five two dimensional bands](assets/not-2d-similarity.jpg)
 
-*Predicted against real pairwise similarity, coloured by two dimensional Morgan
-similarity, green for the most dissimilar pairs through red for the least.
-Agreement does not depend on 2D similarity, so the model is predicting three
-dimensional feature geometry rather than restating its own input. PharmCast **SCP v10** on held-out molecules stratified into five 2D bands. Pearson within the bands is 0.962, 0.982, 0.974, 0.959 and
-0.931 from the least 2D similar to the most. That flatness is the claim the
-panel makes.*
+*Predicted against reference pairwise similarity, coloured by two dimensional
+Morgan similarity, green for the most dissimilar pairs through red for the least.
+Agreement does not depend on two dimensional similarity, so the model is
+predicting three dimensional feature geometry rather than restating its own
+input. PharmCast version 10 on 25,091 unique held-out pairs, stratified into five
+two dimensional bands. Pearson within the bands is 0.965, 0.983, 0.975, 0.963 and
+0.929, from the least two dimensionally similar to the most.*
 
 ## Applicability domain: read this before trusting a score
 
 > **PharmCast is calibrated for catalogue-like chemistry to about 600 Da,
-> peptides to about 900 Da, and activity-backed ChEMBL chemistry in the band the
-> corpus has reached.** Outside that range it is extrapolating.
+> peptides to about 900 Da, and activity-backed ChEMBL chemistry in the band the > training set has reached.** Outside that range it is extrapolating.
 
-**The upper bound moves between releases.** The ChEMBL corpus is built in
-ascending molecular weight, so read `card()["applicability"]` out of the
+**The upper bound moves between releases.** The ChEMBL source set is built in ascending molecular weight, so read `card()["applicability"]` out of the
 checkpoint rather than assuming a fixed number.
 
-The reason is in the training corpus. The screening collection is filtered at
+The reason is in the training set. The screening collection is filtered at
 600 Da on ingest, so it contributes nothing above that line *by construction*.
 In the peptide-only SP models that left **only 1.43% of training above 600 Da,
 and every molecule of it a peptide**, so a large non-peptidic drug was answered
@@ -460,68 +457,62 @@ by extrapolating from a few thousand peptides: error rose from 0.02 to 0.07 and
 
 **ChEMBL exists to close exactly that gap, and it is working.** Activity-backed
 ChEMBL chemistry scores 0.024 median error at *r* 0.935, against 0.017 and 0.974
-for catalogue chemistry. The gap is now small. It is not closed: the corpus is
-built in ascending molecular weight, so competence extends upward as it fills
+for catalogue chemistry. The gap is now small. It is not closed: the training set is built in ascending molecular weight, so competence extends upward as it fills
 rather than covering the whole range at once. ChEMBL remains the widest of the
 three populations and is the number to watch.
 
 A model card that hides its failure mode is worse than no model card.
 
-## Training corpora
+## Training sets
 
-**What went into each model.** Every release is a snapshot of a corpus still
-being built, so the training set grows with the version number.
+**What went into each model.** Every release is a snapshot of a training set still being built, so the training set grows with the version number.
 
-![Stacked bars of training molecules per model version from SP v2 to SCP v10, split into screening collection, ChEMBL and loop peptides, rising from 1,724,833 to 5,887,229](assets/corpus-trajectory.jpg)
+![Stacked bars of training molecules per model version from SP v2 to version 10, split into screening collection, ChEMBL and loop peptides, rising from 1,724,833 to 5,887,229](assets/corpus-trajectory.jpg)
 
-*Training molecules per release, by source. SCP v10 trains on 5,887,229. The
-corpus is still being built, so each release is a larger snapshot of the same
+*Training molecules per release, by source. version 10 trains on 5,887,229. The training set is still being built, so each release is a larger snapshot of the same
 three sources.*
 
 **What that buys.** Agreement against training set size, one point per
 release.
 
-![Median MCC against training set size, one point per model from SP v2 to SCP v10, on a common held-out set](assets/agreement-vs-training-size.jpg)
+![Median MCC against training set size, one point per model from SP v2 to version 10, on a common held-out set](assets/agreement-vs-training-size.jpg)
 
-*Agreement with the real fingerprint against training set size. Returns from
-corpus growth are real but diminishing.*
+*Agreement with the real fingerprint against training set size. Returns from growth in the training set are real but diminishing.*
 
-Where the three corpora stand today:
+Where the three source sets stand today:
 
-| Corpus | At the SCP v10 snapshot | Expected total | Complete |
+| Source set | At the version 10 snapshot | Expected total | Complete |
 |---|---:|---:|---:|
 | Screening collection | 4,609,488 | 4,617,292 | 99.8% |
 | ChEMBL | 1,214,214 | 2,737,190 † | 44.4% |
 | Loop peptides | 136,494 | 136,494 | 100% |
 | **All three** | **5,960,196** | **7,490,976** | **79.6%** |
 
-![Bar chart of each corpus at the SCP v10 sealed snapshot against the expected total: screening collection 99.8%, ChEMBL 44.4%, loop peptides 100%](assets/corpus-progress.jpg)
+![Bar chart of each source set at the version 10 frozen snapshot against the expected total: screening collection 99.8%, ChEMBL 44.4%, loop peptides 100%](assets/corpus-progress.jpg)
 
 **The finished training set is expected to be 7,490,976 molecules**, and
-5,960,196 of them are fingerprinted. **The screening collection and the peptide
-corpus are now complete**, so ChEMBL is the only source with substantial work
-left and is where the corpus will grow next. Every molecule is fingerprinted with
-the real 100-conformer calculation, which is what makes the corpus slow to build
-and worth building.
+5,960,196 of them are fingerprinted. **The screening collection and the peptide set are now complete**, so ChEMBL is the only source with substantial work
+left and is where the training set will grow next. Every molecule is fingerprinted with
+the real 100-conformer calculation, which is what makes it slow to build.
 
 † **ChEMBL is the only projected figure.** The screening collection and the
-peptide corpus are enumerated sets whose totals are known, with only the
+peptide set are enumerated sets whose totals are known, with only the
 fingerprinting left to do.
 
-![Distribution of each molecule's highest 2D Tanimoto to any other molecule in the same corpus, for the screening collection, ChEMBL and the loop peptides](assets/corpus-chemistry.jpg)
+![Distribution of each molecule's highest two dimensional Tanimoto to any other molecule in the same source set, for the screening collection, ChEMBL and the loop peptides](assets/corpus-chemistry.jpg)
 
-*How much distinct chemistry each corpus holds. For every molecule, the highest
-2D Tanimoto to any other molecule in the same corpus, so a distribution sitting
-high means the corpus is largely analog series. Medians are 0.386 for the
-screening collection, 0.368 for ChEMBL and 0.862 for the loop peptides, on the
-same 6,000-molecule sample from each, because nearest-neighbour similarity rises
-with sample size and unequal samples cannot be compared.* ChEMBL selection is still running, so its expected
+*How much distinct chemistry each source set holds. For every molecule, the
+highest two dimensional Tanimoto to any other molecule in the same source set, so
+a distribution sitting high means that set is largely analogue series. Medians are
+0.389 for the screening collection, 0.368 for ChEMBL and 0.864 for the loop
+peptides, on the same 6,000 molecule sample from each, because nearest neighbour
+similarity rises with sample size and unequal samples cannot be compared.* ChEMBL selection is still running, so its expected
 total is an estimate and will move.
 
-SCP v10 trained on a 5,946,696-molecule snapshot, of which 5,887,229 were used
+version 10 trained on a 5,946,696-molecule snapshot, of which 5,887,229 were used
 for gradient updates and 59,467 reserved for early stopping:
 
-| Corpus | Molecules | Share |
+| Source set | Molecules | Share |
 |---|---:|---:|
 | Screening collection | 4,609,488 | 77.51% |
 | ChEMBL, activity backed | 1,214,214 | 20.42% |
@@ -531,23 +522,21 @@ Its output layer is 10,549 wide, one per pharmacophore.
 
 ### The training set is still being built
 
-**This is work in progress, not a finished system.** All three corpora are still
-being fingerprinted. SCP v10 is the current model, trained on a
+**This is work in progress, not a finished system.** All three source sets are still being fingerprinted. version 10 is the current model, trained on a
 5,946,696-molecule snapshot taken along the way against an expected final
-corpus of about 7,490,976.
+training set of about 7,490,976.
 
 **Work continues beyond v10.** No model here is a release
-candidate, and none will be until the corpora are complete. A preprint
+candidate, and none will be until the source sets are complete. A preprint
 describing the finished work is being written.
 
 Each version is published beside its predecessors and never replaces one, so a
 result computed against a given version stays reproducible.
 
-**SCP v10 reserves a stopping split** of 59,467 molecules, 1% of the snapshot
+**version 10 reserves a stopping split** of 59,467 molecules, 1% of the snapshot
 stratified by molecular weight, used only for early stopping, and the released
 weights are the epoch-68 ones restored after the run.
-Accuracy is then measured on a separate population: molecules fingerprinted
-*after* the training corpus was sealed, which the model cannot have seen.
+Accuracy is then measured on a separate population: molecules fingerprinted *after* the training set was frozen, which the model cannot have seen.
 
 Every release is published beside its predecessors and never replaces one.
 
@@ -555,18 +544,16 @@ Naming: **S** is the screening collection, **C** is ChEMBL, **P** is peptides.
 There is no peptide-only model, and "composite" means SP rather than a third
 thing.
 
-The ChEMBL corpus exists to repair a specific, measured weakness. The screening
+The ChEMBL source set exists to repair a specific, measured weakness. The screening
 collection is filtered at MW 600 on ingest, so in the SP models **only 1.4% of
 training sat above MW 600 and every molecule of it was a peptide**. Asked about a
 large non-peptidic drug, SP was extrapolating, and its error rose from 0.02 to
-0.07 with r falling from 0.97 to 0.63. The ChEMBL corpus is real, activity-backed
-chemistry in exactly that band, built in ascending molecular weight so the
+0.07 with r falling from 0.97 to 0.63. The ChEMBL source set is real, activity-backed chemistry in exactly that band, built in ascending molecular weight so the
 model's competence extends upward from what it already knows rather than
 jumping into a gap.
 
 **The evaluation compounds are held out of training** by ChEMBL identifier *and*
-by canonical structure, because the training corpus and the large-compound
-evaluation set are drawn from the same ChEMBL band and would otherwise overlap.
+by canonical structure, because the training set and the large-compound evaluation set are drawn from the same ChEMBL band and would otherwise overlap.
 Training on them would improve the reported large-compound error for an entirely
 artificial reason.
 
@@ -590,8 +577,7 @@ extracted.*
 
 This repository ships the model and the utilities for using it. It does **not**
 ship the reference pharmacophore fingerprint generator
-or any of the fingerprint-generating toolchain, and it does not redistribute any
-training corpus.
+or any of the fingerprint-generating toolchain, and it does not redistribute any training set.
 
 ## Licence
 
@@ -599,15 +585,13 @@ training corpus.
 fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
 
 `NOTICE` credits the sources the model was trained on: the RCSB Protein Data
-Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No
-training corpus is redistributed here, only the trained parameters, and
+Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No training set is redistributed here, only the trained parameters, and
 keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
 attribution those sources ask for.
 
 ## White paper
 
-The full method description, with the corpus construction, the evaluation
-protocol and every figure, current on **SCP v10**.
+The full method description, with the construction of the training set, the evaluation protocol and every figure, current on **version 10**.
 
 **Read it at <https://pharmcast.ai/whitepaper/>**, or open
 [`docs/whitepaper.pdf`](docs/whitepaper.pdf), which GitHub renders inline.
@@ -617,8 +601,7 @@ is self-contained, but **GitHub shows HTML as source rather than rendering it**,
 so a browser is the wrong way to read that file. Download it, or use one of the
 two links above.
 
-Note the evaluation protocol it describes: the model is scored on collection
-molecules fingerprinted *after* its training corpus was sealed, so the
+Note the evaluation protocol it describes: the model is scored on collection molecules fingerprinted *after* its training set was frozen, so the
 evaluation population is one the model cannot have seen.
 
 ## Citation
