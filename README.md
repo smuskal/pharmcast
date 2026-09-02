@@ -18,7 +18,7 @@ PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It
 removes the conformational stage rather than accelerating it, which is why the
 speed-up is of a different order to what optimisation normally buys.
 
-**[Try it now at pharmcast.ai](https://pharmcast.ai/)**, no install, no email.
+**[Try it now at pharmcast.ai](https://pharmcast.ai/)**
 
 - **[Fingerprint a molecule](https://pharmcast.ai/fingerprint.html)**: draw or
   paste one structure and get its complete predicted fingerprint: which of the
@@ -384,17 +384,20 @@ with these same 120 characters. The counts move with the model.*
 The peptide row is the **reserved peptide test set**: 13,500 loops held back from the training set and never trained on. It is the largest and most stable of the three
 populations and the one to read first.
 
-The catalogue and ChEMBL rows are every molecule fingerprinted after the training set was frozen. **Catalogue fingerprinting is now complete at 99.83% of the
-eligible set**, so only 13,373 catalogue molecules remain outside training. That
-residue is the tail of a finished build rather than a representative sample, and
-its n is stated for that reason.
+The catalogue row is 155,648 real, purchasable June 2026 catalogue compounds
+that the ingest filter excluded, so no version has trained on them and none can.
+They span 42 to 977 Da. The ChEMBL row is every ChEMBL molecule fingerprinted
+after the training set was frozen.
 
 | Population | n | Median error | Within 0.05 | Pearson *r* | Ranking acc. |
 |---|---:|---:|---:|---:|---:|
 | Loop peptides, reserved test set | 13,500 | 0.016 | 88% | 0.984 | 0.952 |
-| ChEMBL, activity backed | 37,800 | 0.027 | 76% | 0.938 | 0.890 |
-| Catalogue chemistry | 13,373 | 0.008 | 89% | 0.980 | 0.935 |
+| ChEMBL, activity backed | 139,700 | 0.027 | 75% | 0.936 | 0.889 |
+| Catalogue chemistry | 155,648 | 0.008 | 89% | 0.980 | 0.936 |
 | *Reference against itself* | | *0.006* | | *0.995* | *ceiling* |
+
+The held-out ChEMBL molecules span 374.4 to 398.1 Da and nothing else, because the
+fingerprint build proceeds in ascending molecular weight.
 
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
@@ -425,20 +428,20 @@ the three.*
 ![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast version 10](assets/per-molecule-mcc.jpg)
 
 *How closely each individual predicted fingerprint matches the real one, as the
-Matthews correlation coefficient per molecule. **version 10**, median 0.914 on the
-13,500 molecule reserved peptide test set.*
+Matthews correlation coefficient per molecule. **version 10**, median 0.881 across
+the screening collection test cases.*
 
 ### It is not re-deriving 2D similarity
 
-![Predicted against reference pharmacophore similarity for 25,091 unique pairs, each point coloured by the two dimensional Morgan similarity of that pair, with Pearson reported within each of five two dimensional bands](assets/not-2d-similarity.jpg)
+![Predicted against reference pharmacophore similarity for 25,165 unique pairs, each point coloured by the two dimensional Morgan similarity of that pair, with Pearson reported within each of five two dimensional bands](assets/not-2d-similarity.jpg)
 
 *Predicted against reference pairwise similarity, coloured by two dimensional
 Morgan similarity, green for the most dissimilar pairs through red for the least.
 Agreement does not depend on two dimensional similarity, so the model is
 predicting three dimensional feature geometry rather than restating its own
-input. PharmCast version 10 on 25,091 unique held-out pairs, stratified into five
-two dimensional bands. Pearson within the bands is 0.965, 0.983, 0.975, 0.963 and
-0.929, from the least two dimensionally similar to the most.*
+input. PharmCast version 10 on 25,165 unique held-out pairs, stratified into five
+two dimensional bands. Pearson within the bands is 0.966, 0.981, 0.973, 0.959 and
+0.942, from the least two dimensionally similar to the most.*
 
 ## Applicability domain: read this before trusting a score
 
@@ -456,7 +459,7 @@ by extrapolating from a few thousand peptides: error rose from 0.02 to 0.07 and
 *r* fell from 0.97 to 0.63.
 
 **ChEMBL exists to close exactly that gap, and it is working.** Activity-backed
-ChEMBL chemistry scores 0.024 median error at *r* 0.935, against 0.017 and 0.974
+ChEMBL chemistry scores 0.027 median error at *r* 0.936, against 0.008 and 0.980
 for catalogue chemistry. The gap is now small. It is not closed: the training set is built in ascending molecular weight, so competence extends upward as it fills
 rather than covering the whole range at once. ChEMBL remains the widest of the
 three populations and is the number to watch.
