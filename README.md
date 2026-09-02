@@ -478,7 +478,7 @@ three sources.*
 **What that buys.** Agreement against training set size, one point per
 release.
 
-![Median MCC against training set size, one point per model from SP v2 to version 10, on a common held-out set](assets/agreement-vs-training-size.jpg)
+![Agreement with the reference fingerprint against training set size, one point per release from SP v2 to version 10, every point measured on the same held-out set of 155,648 test cases](assets/agreement-vs-training-size.jpg)
 
 *Agreement with the real fingerprint against training set size. Returns from growth in the training set are real but diminishing.*
 
