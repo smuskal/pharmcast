@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use PharmCast, please cite the preprint below and the two PharmPrint papers it builds on."
-title: "PharmCast: a neural network that learns three dimensional pharmacophoric presentation from two dimensional structure"
+title: "PharmCast: rapid generation of three-dimensional pharmacophore fingerprints from two-dimensional structure without conformer generation"
 authors:
   - family-names: Muskal
     given-names: Steven M.
@@ -9,19 +9,21 @@ authors:
     given-names: Malcolm J.
     affiliation: "SRI International, 333 Ravenswood Avenue, Menlo Park, CA 94025, USA"
 type: software
+version: "SCP v10"
+date-released: "2026-09-01"
 license: Apache-2.0
 repository-code: "https://github.com/smuskal/pharmcast"
 url: "https://pharmcast.ai"
 preferred-citation:
   type: article
-  title: "PharmCast: a neural network that learns three dimensional pharmacophoric presentation from two dimensional structure"
+  title: "PharmCast: rapid generation of three-dimensional pharmacophore fingerprints from two-dimensional structure without conformer generation"
   authors:
     - family-names: Muskal
       given-names: Steven M.
     - family-names: McGregor
       given-names: Malcolm J.
   year: 2026
-  notes: "bioRxiv preprint, draft 22 August 2026, not yet submitted. DOI to be added on posting."
+  notes: "bioRxiv preprint, draft 1 September 2026, not yet submitted. DOI to be added on posting."
 references:
   - type: article
     title: "Pharmacophore fingerprinting. 1. Application to QSAR and focused library design"
