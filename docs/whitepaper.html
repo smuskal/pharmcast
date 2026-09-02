@@ -1,5 +1,33 @@
 <meta charset="utf-8">
 <title>PharmCast whitepaper</title>
+<!-- Reporting. This page had neither the GA tag nor the beacon, so its traffic
+     was invisible, and it is the page a reader of the paper lands on. Firebase
+     Hosting writes no readable request logs, so the beacon is the only record
+     of a visit; GA alone is not enough. Both belong in the TEMPLATE rather than
+     in the output, or the next rebuild silently drops them again. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KD6K2V38H3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KD6K2V38H3');
+</script>
+<script>
+  (function () {
+    try {
+      fetch('/api/track', {
+        method: 'POST',
+        keepalive: true,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          path: location.pathname,
+          referrer: document.referrer || '',
+          site: 'pharmcast'
+        })
+      }).catch(function () {});
+    } catch (e) { /* tracking must never break the page */ }
+  })();
+</script>
 <style>
 @page {
   size: Letter; margin: 20mm 17mm 18mm 17mm;
