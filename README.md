@@ -478,15 +478,13 @@ being built, so the training set grows with the version number.
 corpus is still being built, so each release is a larger snapshot of the same
 three sources.*
 
-**What that buys.** Every model scored on the same 9,975 held-out molecules, so
-the curve is a like-for-like comparison across the whole family rather than
-eight separate evaluations.
+**What that buys.** Agreement against training set size, one point per
+release.
 
 ![Median MCC against training set size, one point per model from SP v2 to SCP v10, on a common held-out set](assets/agreement-vs-training-size.jpg)
 
-*Agreement with the real fingerprint against training set size, every point
-scored on the same 9,975 held-out molecules. Returns from corpus growth are
-real but diminishing.*
+*Agreement with the real fingerprint against training set size. Returns from
+corpus growth are real but diminishing.*
 
 Where the three corpora stand today:
 
