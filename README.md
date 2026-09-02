@@ -428,8 +428,8 @@ the three.*
 ![Per-molecule Matthews correlation coefficient between the predicted and the real fingerprint for PharmCast version 10](assets/per-molecule-mcc.jpg)
 
 *How closely each individual predicted fingerprint matches the real one, as the
-Matthews correlation coefficient per molecule. **version 10**, median 0.881 across
-the screening collection test cases.*
+Matthews correlation coefficient per molecule. **version 10** on 155,648 Enamine
+test cases. Median 0.881.*
 
 ### It is not re-deriving 2D similarity
 
