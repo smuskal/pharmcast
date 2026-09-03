@@ -111,12 +111,12 @@ molecule can present in three dimensions, and they are among the most useful
 descriptors available for scaffold hopping, focused library design and
 similarity searching. Their cost is dominated not by the fingerprint but by the
 conformer ensemble it requires: almost all of the cost of fingerprinting one
-catalogue molecule over 100 conformers is conformer generation, and only a small
+catalog molecule over 100 conformers is conformer generation, and only a small
 fraction of it is the fingerprint calculation itself. We describe <i>PharmCast</i>, a
 feedforward model that predicts the complete 10,549-bit ensemble fingerprint
 directly from the molecule's two-dimensional structure, with no conformer
 generation at any stage.
-Trained on 5,887,229 catalogue molecules whose ensemble fingerprints were
+Trained on 5,887,229 catalog molecules whose ensemble fingerprints were
 computed conventionally, PharmCast reproduces the held-out fingerprint at a
 median per-molecule Matthews correlation of 0.881. On the quantity that is
 actually consumed downstream, the
@@ -174,7 +174,7 @@ the same bit is set in both. Reproduced from reference&nbsp;1.</figcaption>
 </figure>
 
 <p>The ensemble is where the cost lives. Over 100-conformer builds, conformer
-generation and optimisation dominate the total, while the fingerprint
+generation and optimization dominate the total, while the fingerprint
 calculation itself is a small fraction of it. The descriptor is therefore far
 cheaper than the geometry it is computed on. That imbalance is what motivates a surrogate: if
 the ensemble fingerprint can be predicted from constitution, the entire
@@ -205,8 +205,8 @@ protocol it was not trained on.</p>
 <p>Training molecules are drawn from a commercial screening collection [8] of
 4,612,044 compounds. The collection is broad in scaffold terms, with 135,768
 distinct Bemis-Murcko scaffolds in a 200,000 molecule sample of which
-87.6% appear exactly once, and simultaneously dense in close analogues,
-which is characteristic of enumerated catalogue chemistry. The model reported
+87.6% appear exactly once, and simultaneously dense in close analogs,
+which is characteristic of enumerated catalog chemistry. The model reported
 here was trained on 5,887,229 molecules.</p>
 
 <h3>2.3 Peptide corpus, and the distinction between an observed and a
@@ -214,7 +214,7 @@ proliferated presentation</h3>
 
 <p>The second corpus is drawn from experimentally determined protein structures
 [10],
-and it exists to extend the model beyond catalogue chemistry into a class of
+and it exists to extend the model beyond catalog chemistry into a class of
 molecule that is unquestionably real. The Protein Data Bank [10] was queried at a
 resolution limit of 2.5&nbsp;&Aring; and a free R-factor limit of 0.22, which
 returned <b>71,018</b> entries. Of these <b>70,818</b> parsed and <b>69,450</b>
@@ -265,7 +265,7 @@ pharmacophorically distinct rather than the best resolved, since selecting by
 resolution returns the same crystal form repeatedly.</figcaption>
 </figure>
 
-<p>The obvious objection is that this variation is an artefact of crystallographic
+<p>The obvious objection is that this variation is an artifact of crystallographic
 quality: poorly resolved or loosely refined loops would fit badly and appear to
 differ. That objection is testable, and it fails. Repeating the search over only
 those instances determined at 1.8&nbsp;&Aring; or better with a free
@@ -311,7 +311,7 @@ evidence for the loop is retained, and it additionally ORs in 100 computed
 conformers of the same capped molecule. The result is a description of what that
 peptide <i>can</i> present, anchored on what it has been seen to present.
 Because both sources contribute, the effective conformer count exceeds one
-hundred. The observed geometries are never discarded in favour of the computed
+hundred. The observed geometries are never discarded in favor of the computed
 ones; the computed ones fill in the accessible space around them.</p>
 
 <p>Repeated sequences are kept rather than deduplicated. How often a loop
@@ -385,12 +385,12 @@ they are not interchangeable. The <b>reserved peptide test set</b> is the one to
 read first: 13,500 loops held out of the corpus by construction and never
 trained on, at a median per-molecule agreement of 0.914.</p>
 
-<p>The catalogue and ChEMBL populations are held out by TIME, every molecule
-fingerprinted after the corpus was sealed. On 155,648 such catalogue molecules
+<p>The catalog and ChEMBL populations are held out by TIME, every molecule
+fingerprinted after the corpus was sealed. On 155,648 such catalog molecules
 the median per-molecule agreement is 0.881. <b>Read that n before reading that
-number.</b> Catalogue fingerprinting is now essentially complete, so what remains
+number.</b> Catalog fingerprinting is now essentially complete, so what remains
 outside the training snapshot is the tail of a finished build rather than a
-sample of catalogue chemistry. The pairwise statistics on the same molecules are
+sample of catalog chemistry. The pairwise statistics on the same molecules are
 the strongest of any population, at a median absolute error of 0.008 and
 Pearson 0.980; agreement per molecule falls while error improves, which is
 the signature of a changed population rather than a worse model.</p>
@@ -453,10 +453,10 @@ over 2,998,976 comparisons drawn from the held-out set.</caption>
 </tbody></table>
 
 <p>In a retrieval setting over 22,793 candidates and 22,793 queries, the
-true nearest neighbour has a median rank of 5 under the surrogate, and
+true nearest neighbor has a median rank of 5 under the surrogate, and
 appears within the surrogate's top 100 for 89.3% of queries and within
 its top 500 for 97.5% (Figure 6). This is the operationally relevant
-behaviour: the surrogate is used to select a shortlist that the reference
+behavior: the surrogate is used to select a shortlist that the reference
 calculation then adjudicates.</p>
 
 <figure class="wide">
@@ -472,11 +472,11 @@ order.</figcaption>
 <p>Table 4 gives the cost of each route. The surrogate removes the
 conformational stage entirely rather than accelerating it, which is why the
 speedup is of a different order to what is normally achievable by
-optimisation.</p>
+optimization.</p>
 
 <table>
 <caption><b>Table 4.</b> What one pharmacophore fingerprint costs, and what the
-whole catalogue costs, by route.</caption>
+whole catalog costs, by route.</caption>
 <thead><tr><th>Route</th><th class="n">One fingerprint</th>
 <th class="n">The 4.65 million compound collection</th></tr></thead>
 <tbody>
@@ -495,7 +495,7 @@ in a library scale batch against 0.357 ms for a molecule processed alone. The
 3,694 core hour figure is extrapolated from the per molecule rate, because the
 collection has been fingerprinted by that route only in multiday production
 runs; the 29.3 minute figure was measured end to end at 2,644 compounds per
-second on six worker processes, including catalogue reading and featurisation.
+second on six worker processes, including catalog reading and featurisation.
 A timing quoted without these conditions is not reproducible, which is why they
 are stated here rather than in a footnote.</p>
 
@@ -504,12 +504,12 @@ fingerprint calculation over the ensemble. Comparing two molecules once both
 fingerprints exist is a Tanimoto over 10,549 bits and costs 0.012 ms by either
 route, so it is not where the difference lies. Starting from two SMILES
 strings, PharmCast returns a similarity in 0.584 ms at library scale against
-5.71 s for the conventional route. The saving is not an optimisation of the
+5.71 s for the conventional route. The saving is not an optimization of the
 conventional route but the removal of its dominant stage: PharmCast never
 generates a conformer and never fingerprints one.</p>
 
-<h3>3.5 Behaviour across chemistries</h3>
-<p>Catalogue chemistry is not the only domain of interest. Table 5 reports the
+<h3>3.5 Behavior across chemistries</h3>
+<p>Catalog chemistry is not the only domain of interest. Table 5 reports the
 composite model <span class="mono">pharmcast_scp_v10.pt</span>, trained on
 <strong>4,563,262</strong> collection molecules together with
 <strong>121,784</strong> ensemble-enhanced protein loop peptides, evaluated on
@@ -540,27 +540,27 @@ coarsely.</figcaption>
 </figure>
 
 <h3>3.6 The limit: molecular size</h3>
-<p>The clearest failure mode is size. Table 6 compares performance on catalogue
+<p>The clearest failure mode is size. Table 6 compares performance on catalog
 chemistry against real ChEMBL compounds above 600 molecular weight, using an
 identical protocol on both. The two similarity landscapes have essentially the
 same spread, 0.153 against 0.118, so the degradation is attributable
 to size rather than to one task being intrinsically harder.</p>
 
 <table>
-<caption><b>Table 6.</b> The same protocol applied to catalogue chemistry, median
+<caption><b>Table 6.</b> The same protocol applied to catalog chemistry, median
 211 molecular weight, and to 573 real compounds above 600, median
 638. The two similarity landscapes have comparable spread, 0.153
 and 0.118, so the difference is attributable to size rather than to one
 task being intrinsically harder.</caption>
-<thead><tr><th>Model</th><th class="n">Catalogue accuracy</th>
-<th class="n">Catalogue error</th><th class="n">Large accuracy</th>
+<thead><tr><th>Model</th><th class="n">Catalog accuracy</th>
+<th class="n">Catalog error</th><th class="n">Large accuracy</th>
 <th class="n">Large error</th></tr></thead>
 <tbody>
 <tr><td><strong>PharmCast-SCP v10</strong></td>
 <td class="n"><strong>93.4%</strong></td><td class="n"><strong>0.008</strong></td>
 <td class="n"><strong>82.6%</strong></td><td class="n"><strong>0.040</strong></td></tr>
 </tbody></table>
-<p>Ranking accuracy on the larger compounds sits below the catalogue figure:
+<p>Ranking accuracy on the larger compounds sits below the catalog figure:
 82.6% against 93.4%, at a median absolute error of
 0.040 against 0.008. That gap is the honest limit of the model
 on chemistry heavier than the screening collection contains, and it narrows as
@@ -580,21 +580,21 @@ common-mode and cancels in a comparison.</p>
 <p>This bounds the interpretation of Section 3.6. The reference calculation
 agrees with itself an order of magnitude more tightly than PharmCast agrees with
 it on large molecules, so that degradation is a genuine limitation of the
-surrogate and not an artefact of a noisy target.</p>
+surrogate and not an artifact of a noisy target.</p>
 
 <h2>4. Discussion</h2>
 
 <p>The intended use follows from the measurements. Where the true difference
 between two candidates is large, the surrogate orders them almost perfectly and
 can be trusted to build a shortlist. Where the difference is small, it cannot,
-and the reference calculation must adjudicate. The economics are favourable
+and the reference calculation must adjudicate. The economics are favorable
 because the two regimes are cheap and expensive respectively: a surrogate pass
 over a multi-million compound collection costs minutes, and the reference
 calculation is then spent only where it decides the answer.</p>
 
 <p>One failure mode deserves emphasis because it is not visible in any of the
-tables above. When a surrogate is used as the objective of an optimiser rather
-than as a filter, the optimiser will eventually exploit its error. In a design
+tables above. When a surrogate is used as the objective of an optimizer rather
+than as a filter, the optimizer will eventually exploit its error. In a design
 campaign that used this model as the scoring function for a genetic algorithm, a
 seventeen-fold increase in search budget raised the median surrogate score of the
 retained designs by 0.20 while raising their median true score by 0.02, and the
@@ -622,11 +622,11 @@ evaluation files, so a later version is directly comparable to this one.</p>
 <p>The model predicts the ORed ensemble fingerprint and therefore cannot support
 any application that requires per-conformer matching geometry, which is the
 regime PolyPharmPrint addresses. Performance degrades materially outside
-catalogue-like chemistry, most clearly with increasing molecular size, and the
+catalog-like chemistry, most clearly with increasing molecular size, and the
 degradation is a property of the surrogate rather than of a noisy target.
 Predicted similarities carry a small positive bias arising from a systematic
 over-prediction of set bits; this does not affect ordering but does affect any
-absolute threshold. All results reported here are computed on real catalogue
+absolute threshold. All results reported here are computed on real catalog
 compounds and on peptides extracted from experimentally determined structures;
 no molecules were generated for evaluation purposes.</p>
 
@@ -654,7 +654,7 @@ Model.</i> <b>2010</b>, <i>50</i>, 742-754.</li>
 <li>RDKit: open-source cheminformatics. <span class="mono">https://www.rdkit.org</span></li>
 <li>Enamine screening collection, June 2026 release. Enamine Ltd.
 <span class="mono">https://enamine.net</span></li>
-<li>Enamine building blocks, in-stock catalogue. Enamine Ltd.
+<li>Enamine building blocks, in-stock catalog. Enamine Ltd.
 <span class="mono">https://enamine.net</span></li>
 <li>RCSB Protein Data Bank. <span class="mono">https://www.rcsb.org</span></li>
 <li>Zdrazil, B.; Felix, E.; Hunter, F.; Manners, E. J.; Blackshaw, J.;
@@ -678,7 +678,7 @@ out. Counts are for the model reported here.</caption>
 <thead><tr><th>Population</th><th>How it is held out</th>
 <th class="n">Source</th></tr></thead>
 <tbody>
-<tr><td>Catalogue chemistry</td>
+<tr><td>Catalog chemistry</td>
 <td>Every collection molecule fingerprinted <i>after</i> the training corpus
 was sealed, so none could have been seen. Held out by time, not by
 sampling.</td><td class="n">[8]</td></tr>

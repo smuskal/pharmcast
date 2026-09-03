@@ -11,12 +11,12 @@ A pharmacophore fingerprint records the three-dimensional arrangement of binding
 features a molecule can present, so two compounds from completely different
 scaffolds can be compared on the thing a protein actually reads. Its cost has
 never been the fingerprint. Almost all of the cost of fingerprinting a
-catalogue molecule is generating its conformer ensemble; the bit calculation
+catalog molecule is generating its conformer ensemble; the bit calculation
 itself is a small fraction of it.
 
 PharmCast reads a SMILES and predicts all 10,549 pharmacophores directly. It
 removes the conformational stage rather than accelerating it, which is why the
-speed-up is of a different order to what optimisation normally buys.
+speed-up is of a different order to what optimization normally buys.
 
 **[Try it now at pharmcast.ai](https://pharmcast.ai/)**
 
@@ -138,7 +138,7 @@ batch 256, learning rate 0.001, 10,549 outputs, 8,045,877 parameters.
 
 **A published checkpoint is never replaced in place.** A new release is added
 beside the old ones and `SHA256SUMS` is append-only, so a script pinned to a URL
-keeps returning the same bytes. The weights carry the same Apache-2.0 licence as
+keeps returning the same bytes. The weights carry the same Apache-2.0 license as
 the code.
 
 ## Quick start
@@ -167,7 +167,7 @@ pharmcast --model pharmcast_scp_v10.pt sim \
   'CC/C(=C(/CC)c1ccc(O)cc1)c1ccc(O)cc1'
 ```
 
-Screen a library for nearest neighbours:
+Screen a library for nearest neighbors:
 
 ```bash
 pharmcast --model pharmcast_scp_v10.pt screen \
@@ -231,7 +231,7 @@ input, and all four combinations work:
 | reference | reference | ground truth against ground truth |
 | predicted | predicted | predicted against predicted |
 | reference | predicted | would a reference query have found this predicted library? |
-| predicted | reference | does a predicted query retrieve the right reference neighbours? |
+| predicted | reference | does a predicted query retrieve the right reference neighbors? |
 
 **No model is loaded when both sides are `.pfp`.** `--model` is required only
 when an input is `.smi`:
@@ -384,7 +384,7 @@ with these same 120 characters. The counts move with the model.*
 The peptide row is the **reserved peptide test set**: 13,500 loops held back from the training set and never trained on. It is the largest and most stable of the three
 populations and the one to read first.
 
-The catalogue row is 155,648 real, purchasable June 2026 catalogue compounds
+The catalog row is 155,648 real, purchasable June 2026 catalog compounds
 that the ingest filter excluded, so no version has trained on them and none can.
 They span 42 to 977 Da. The ChEMBL row is every ChEMBL molecule fingerprinted
 after the training set was frozen.
@@ -393,7 +393,7 @@ after the training set was frozen.
 |---|---:|---:|---:|---:|---:|
 | Loop peptides, reserved test set | 13,500 | 0.016 | 88% | 0.984 | 0.952 |
 | ChEMBL, activity backed | 139,700 | 0.027 | 75% | 0.936 | 0.889 |
-| Catalogue chemistry | 155,648 | 0.008 | 89% | 0.980 | 0.936 |
+| Catalog chemistry | 155,648 | 0.008 | 89% | 0.980 | 0.936 |
 | *Reference against itself* | | *0.006* | | *0.995* | *ceiling* |
 
 The held-out ChEMBL molecules span 374.4 to 398.1 Da and nothing else, because the
@@ -402,7 +402,7 @@ fingerprint build proceeds in ascending molecular weight.
 Ranking accuracy is the fraction of molecule triples the model orders the same
 way the reference does, exact ties excluded.
 
-ChEMBL is the weakest population: error is about 50% higher than on catalogue
+ChEMBL is the weakest population: error is about 50% higher than on catalog
 chemistry and roughly one pair in five falls outside 0.05. Error rises to
 **0.041 above 600 Da**, where coverage of the training set is thinnest.
 
@@ -418,10 +418,10 @@ reference calculation agrees with itself an order of magnitude more tightly than
 PharmCast agrees with it. **The ground truth is not the problem**, and 0.006 is
 the floor no surrogate can beat.
 
-![Predicted against real pairwise PFP Tanimoto for PharmCast version 10, coloured by population: catalogue chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
+![Predicted against real pairwise PFP Tanimoto for PharmCast version 10, colored by population: catalog chemistry, ChEMBL activity backed, and loop peptides, all following the diagonal](assets/fidelity-by-population.jpg)
 
 *PharmCast **version 10**. Predicted against real pairwise similarity on held out
-molecules, by population. The dashed line is exact agreement. Catalogue
+molecules, by population. The dashed line is exact agreement. Catalog
 chemistry and loop peptides sit tight to it; ChEMBL compounds are the widest of
 the three.*
 
@@ -433,9 +433,9 @@ test cases. Median 0.881.*
 
 ### It is not re-deriving 2D similarity
 
-![Predicted against reference pharmacophore similarity for 25,165 unique pairs, each point coloured by the two dimensional Morgan similarity of that pair, with Pearson reported within each of five two dimensional bands](assets/not-2d-similarity.jpg)
+![Predicted against reference pharmacophore similarity for 25,165 unique pairs, each point colored by the two dimensional Morgan similarity of that pair, with Pearson reported within each of five two dimensional bands](assets/not-2d-similarity.jpg)
 
-*Predicted against reference pairwise similarity, coloured by two dimensional
+*Predicted against reference pairwise similarity, colored by two dimensional
 Morgan similarity, green for the most dissimilar pairs through red for the least.
 Agreement does not depend on two dimensional similarity, so the model is
 predicting three dimensional feature geometry rather than restating its own
@@ -445,7 +445,7 @@ two dimensional bands. Pearson within the bands is 0.966, 0.981, 0.973, 0.959 an
 
 ## Applicability domain: read this before trusting a score
 
-> **PharmCast is calibrated for catalogue-like chemistry to about 600 Da,
+> **PharmCast is calibrated for catalog-like chemistry to about 600 Da,
 > peptides to about 900 Da, and activity-backed ChEMBL chemistry in the band the > training set has reached.** Outside that range it is extrapolating.
 
 **The upper bound moves between releases.** The ChEMBL source set is built in ascending molecular weight, so read `card()["applicability"]` out of the
@@ -460,7 +460,7 @@ by extrapolating from a few thousand peptides: error rose from 0.02 to 0.07 and
 
 **ChEMBL exists to close exactly that gap, and it is working.** Activity-backed
 ChEMBL chemistry scores 0.027 median error at *r* 0.936, against 0.008 and 0.980
-for catalogue chemistry. The gap is now small. It is not closed: the training set is built in ascending molecular weight, so competence extends upward as it fills
+for catalog chemistry. The gap is now small. It is not closed: the training set is built in ascending molecular weight, so competence extends upward as it fills
 rather than covering the whole range at once. ChEMBL remains the widest of the
 three populations and is the number to watch.
 
@@ -506,9 +506,9 @@ fingerprinting left to do.
 
 *How much distinct chemistry each source set holds. For every molecule, the
 highest two dimensional Tanimoto to any other molecule in the same source set, so
-a distribution sitting high means that set is largely analogue series. Medians are
+a distribution sitting high means that set is largely analog series. Medians are
 0.389 for the screening collection, 0.368 for ChEMBL and 0.864 for the loop
-peptides, on the same 6,000 molecule sample from each, because nearest neighbour
+peptides, on the same 6,000 molecule sample from each, because nearest neighbor
 similarity rises with sample size and unequal samples cannot be compared.* ChEMBL selection is still running, so its expected
 total is an estimate and will move.
 
@@ -582,7 +582,7 @@ This repository ships the model and the utilities for using it. It does **not**
 ship the reference pharmacophore fingerprint generator
 or any of the fingerprint-generating toolchain, and it does not redistribute any training set.
 
-## Licence
+## License
 
 **[Apache-2.0](LICENSE)** covers code and model weights alike. Use it commercially,
 fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
