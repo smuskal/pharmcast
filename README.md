@@ -467,12 +467,12 @@ A model card that hides its failure mode is worse than no model card.
 
 ## Training sets
 
-**What went into each model.** Every release is a snapshot of a training set still being built, so the training set grows with the version number.
+**What went into each model.** The training set grows with the version number.
 
 ![Stacked bars of training molecules per model version from SP v2 to version 10, split into screening collection, ChEMBL and loop peptides, rising from 1,724,833 to 5,887,229](assets/corpus-trajectory.jpg)
 
-*Training molecules per release, by source. version 10 trains on 5,887,229. The training set is still being built, so each release is a larger snapshot of the same
-three sources.*
+*Training molecules per release, by source. version 10 trains on 5,887,229.
+Each release draws on the same three sources.*
 
 **What that buys.** Agreement against training set size, one point per
 release.
@@ -521,16 +521,6 @@ for gradient updates and 59,467 reserved for early stopping:
 | Protein loop peptides | 122,994 | 2.07% |
 
 Its output layer is 10,549 wide, one per pharmacophore.
-
-### The training set is still being built
-
-**This is work in progress, not a finished system.** All three source sets are still being fingerprinted. version 10 is the current model, trained on a
-5,946,696-molecule snapshot taken along the way against an expected final
-training set of about 7,490,976.
-
-**Work continues beyond v10.** No model here is a release
-candidate, and none will be until the source sets are complete. A preprint
-describing the finished work is being written.
 
 Each version is published beside its predecessors and never replaces one, so a
 result computed against a given version stays reproducible.
