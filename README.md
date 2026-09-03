@@ -3,7 +3,6 @@
 **Predict a complete 3D pharmacophore fingerprint directly from a 2D structure.**
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![White paper](https://img.shields.io/badge/white%20paper-read-8a5a2b.svg)](https://pharmcast.ai/whitepaper/)
 [![Site](https://img.shields.io/badge/site-pharmcast.ai-8a5a2b.svg)](https://pharmcast.ai)
 [![Try it now](https://img.shields.io/badge/try%20it%20now-pharmcast.ai-2d7d46.svg)](https://pharmcast.ai/)
 
@@ -591,21 +590,6 @@ fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
 Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No training set is redistributed here, only the trained parameters, and
 keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
 attribution those sources ask for.
-
-## White paper
-
-The full method description, with the construction of the training set, the evaluation protocol and every figure, current on **version 10**.
-
-**Read it at <https://pharmcast.ai/whitepaper/>**, or open
-[`docs/whitepaper.pdf`](docs/whitepaper.pdf), which GitHub renders inline.
-
-`docs/whitepaper.html` is the same document and is kept here so the repository
-is self-contained, but **GitHub shows HTML as source rather than rendering it**,
-so a browser is the wrong way to read that file. Download it, or use one of the
-two links above.
-
-Note the evaluation protocol it describes: the model is scored on collection molecules fingerprinted *after* its training set was frozen, so the
-evaluation population is one the model cannot have seen.
 
 ## Citation
 
