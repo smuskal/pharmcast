@@ -5,24 +5,14 @@ Turns a `.pfp` fingerprint into something a person can read.
 [![Fingerprint a molecule](https://img.shields.io/badge/▶%20Fingerprint%20a%20molecule-pharmcast.ai-2d7d46?style=for-the-badge)](https://pharmcast.ai/fingerprint.html)
 [![Compare two molecules](https://img.shields.io/badge/▶%20Compare%20two%20molecules-pharmcast.ai-4a7c1f?style=for-the-badge)](https://pharmcast.ai/compare.html)
 
-## Scope — decoders only, by design
+## Scope
 
-These tools **read** a `.pfp` fingerprint and make it human readable. They
-**cannot produce one**. Fingerprint generation is performed by the reference
-generator, which is not distributed here and is not part of this repository.
+These tools read a `.pfp` fingerprint and make it human readable.
+Fingerprints come from PharmCast output, and these tools make that output
+readable.
 
-Deliberately excluded, and not to be added:
-
-- the reference fingerprint generator, in source or binary form
-- the pharmacophore definition files that generator consumes
-- compiled binaries of any kind — build from source with the command below
-
-`pharm10549.list` **is** included: it is the bit-index-to-pharmacophore lookup
-table the decoders need in order to label a hit. It is a decode table and confers
-no ability to generate a fingerprint.
-
-The intended workflow is that fingerprints come from PharmCast output, and these
-tools make that output readable.
+`pharm10549.list` is included: it is the bit-index-to-pharmacophore lookup
+table the decoders need in order to label a hit.
 
 ## Try it now — the same report, in the browser
 
@@ -30,7 +20,7 @@ tools make that output readable.
 Draw or paste one structure and it returns the complete predicted fingerprint:
 which of the 10,549 pharmacophores are set, each one named as a feature triplet,
 and the fingerprint itself ready to copy in both packed 32-bit and `0`/`1` form.
-No install, no email.
+Nothing to install.
 
 **Compare two molecules** returns the PharmSim similarity between two structures.
 

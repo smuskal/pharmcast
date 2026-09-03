@@ -575,20 +575,14 @@ loop sequences the median is 0.878, which is what the ensemble record is built t
 capture. Regenerated at each release, so it grows as more structures are
 extracted.*
 
-## What is *not* here
-
-This repository ships the model and the utilities for using it. It does **not**
-ship the reference pharmacophore fingerprint generator
-or any of the fingerprint-generating toolchain, and it does not redistribute any training set.
-
 ## License
 
 **[Apache-2.0](LICENSE)** covers code and model weights alike. Use it commercially,
 fork it, embed it; keep the `LICENSE` and `NOTICE` files with it.
 
 `NOTICE` credits the sources the model was trained on: the RCSB Protein Data
-Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection. No training set is redistributed here, only the trained parameters, and
-keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
+Bank (CC0), ChEMBL (CC BY-SA 3.0) and the Enamine screening collection.
+Keeping `NOTICE` intact, which Apache-2.0 already requires, satisfies the
 attribution those sources ask for.
 
 ## Citation
