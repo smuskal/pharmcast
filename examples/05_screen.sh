@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nearest-neighbour screening: rank a target set against one or more queries.
+# Nearest-neighbor screening: rank a target set against one or more queries.
 #
 # Every fingerprint in the query file is ranked against the whole target set.
 # Bound the result with a top-N, a score cutoff, or both.

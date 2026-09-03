@@ -1,4 +1,4 @@
-"""Nearest-neighbour screening: many queries against a large target set.
+"""Nearest-neighbor screening: many queries against a large target set.
 
 Every fingerprint in the query file is used, each ranked against the whole
 target set. Results can be bounded by a top-N, by a score cutoff, or by both,
@@ -193,7 +193,7 @@ def screen(queries, targets, top=10, cutoff=None, exclude_self=False,
     `top` bounds what is kept per query; `cutoff` filters on score. With both,
     the answer is the best `top` of those at or above `cutoff`. With `top=None`
     and a cutoff, every hit above the cutoff is kept -- which is the original
-    tool's behaviour, and the only mode whose memory grows with the number of
+    tool's behavior, and the only mode whose memory grows with the number of
     hits rather than with N.
 
     -> dict {query index: [(score, target_name, target_smiles, target_bits)]},

@@ -31,13 +31,13 @@ Protein Data Bank
 ChEMBL (PharmCast SCP and later)
   Large-molecule training and evaluation data were derived from ChEMBL, made
   available by the European Bioinformatics Institute under the Creative Commons
-  Attribution-ShareAlike 3.0 Unported licence (CC BY-SA 3.0).
+  Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0).
   https://creativecommons.org/licenses/by-sa/3.0/
   Zdrazil, B. et al. The ChEMBL Database in 2023. Nucleic Acids Research (2024).
 
 Enamine
   Screening collection structures were supplied by Enamine Ltd under their
-  catalogue terms. https://enamine.net
+  catalog terms. https://enamine.net
 
 Attribution to these sources is required when redistributing the weights and is
 satisfied by keeping this NOTICE file intact, as the Apache License already

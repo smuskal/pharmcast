@@ -70,7 +70,7 @@ def cmd_sim(a):
 
 
 def cmd_screen(a):
-    """Nearest-neighbour screen: every query against every target.
+    """Nearest-neighbor screen: every query against every target.
 
     See screen.py for how the streaming and the format contract work.
     """

@@ -13,7 +13,7 @@ bitwise OR over a conformer ensemble, so a bit means "this molecule can present
 this pharmacophore triplet in some accessible conformation", not "it does".
 Values are therefore lower than 2D fingerprint Tanimotos on the same pairs and
 must not be compared against them on a shared scale. Typical set-bit counts are
-around 530 for catalogue-sized compounds and around 2,000 for peptides, so a
+around 530 for catalog-sized compounds and around 2,000 for peptides, so a
 large size mismatch depresses the coefficient on its own.
 """
 from __future__ import annotations

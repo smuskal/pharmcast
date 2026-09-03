@@ -37,7 +37,7 @@ bit.
 These are **ensemble** fingerprints: the bitwise OR over a conformer ensemble.
 A set bit therefore means *this molecule can present this triplet in some
 accessible conformation*, not that it does. Typical set-bit counts are around
-**534** for catalogue-sized compounds and around **2,015** for peptides, so a
+**534** for catalog-sized compounds and around **2,015** for peptides, so a
 large size mismatch depresses a Tanimoto on its own, and these values are not
 on a shared scale with 2D fingerprint Tanimotos.
 

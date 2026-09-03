@@ -23,7 +23,7 @@ preferred-citation:
     - family-names: McGregor
       given-names: Malcolm J.
   year: 2026
-  notes: "bioRxiv preprint, draft 1 September 2026, not yet submitted. DOI to be added on posting."
+  notes: "bioRxiv preprint, 2026. DOI to be added on posting."
 references:
   - type: article
     title: "Pharmacophore fingerprinting. 1. Application to QSAR and focused library design"

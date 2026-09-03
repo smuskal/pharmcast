@@ -3,7 +3,7 @@
 The normal route from a structure to a 3D pharmacophore fingerprint is SMILES,
 then a 100-conformer ensemble, then the reference calculation over that
 ensemble -- about 2.5
-seconds per catalogue molecule, of which almost all is conformer generation.
+seconds per catalog molecule, of which almost all is conformer generation.
 PharmCast goes straight from the SMILES to the predicted fingerprint in well
 under a millisecond.
 
@@ -171,7 +171,7 @@ class PharmCast:
         d = {"corpora": parts, "train_molecules": total}
         if not chem and total:
             # Without ChEMBL, everything above MW 600 is peptidic.
-            d["calibrated_for"] = ("catalogue-like chemistry to about MW 600, "
+            d["calibrated_for"] = ("catalog-like chemistry to about MW 600, "
                                    "plus peptides to about MW 900")
             d["extrapolating_above"] = 600
             d["caveat"] = ("about 1.4% of training sits above MW 600 and all "
@@ -180,7 +180,7 @@ class PharmCast:
                            "error rises from 0.02 to 0.07 and r falls from "
                            "0.97 to 0.63")
         elif total:
-            d["calibrated_for"] = ("catalogue-like chemistry to about MW 600, "
+            d["calibrated_for"] = ("catalog-like chemistry to about MW 600, "
                                    "peptides to about MW 900, and "
                                    "activity-backed ChEMBL chemistry in the "
                                    "band the corpus has reached")
@@ -256,7 +256,7 @@ class PharmCast:
         Extra positional arguments are accepted and ignored so this drops in
         for a real-calculation call site without touching the caller:
         PharmCast always predicts the 100-conformer ensemble, so there is no
-        conformer count to honour.
+        conformer count to honor.
         """
         try:
             if not valid_mask([smi])[0]:

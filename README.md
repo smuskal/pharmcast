@@ -262,14 +262,14 @@ read as though both sides had the same conformational coverage.
 
 Targets are streamed in chunks with a bounded top-N heap per query, so memory
 is a function of the query count and N, never of how many targets there are.
-A full queries-by-targets matrix is never materialised: `pharmtan_matrix`
+A full queries-by-targets matrix is never materialized: `pharmtan_matrix`
 remains the right tool for a few thousand fingerprints, but at four million
 targets one query row alone is 32 MB.
 
 Throughput is reported to stderr on completion.
 
 The coefficient is exactly the one `pharmtan` computes pairwise, same popcount
-over the same packed words, vectorised across a chunk. `tests/test_screen.py`
+over the same packed words, vectorized across a chunk. `tests/test_screen.py`
 asserts that rather than asking you to take it on trust.
 
 ## Worked examples
@@ -481,25 +481,17 @@ release.
 
 *Agreement with the real fingerprint against training set size. Returns from growth in the training set are real but diminishing.*
 
-Where the three source sets stand today:
+The three source sets at the version 10 snapshot:
 
-| Source set | At the version 10 snapshot | Expected total | Complete |
-|---|---:|---:|---:|
-| Screening collection | 4,609,488 | 4,617,292 | 99.8% |
-| ChEMBL | 1,214,214 | 2,737,190 † | 44.4% |
-| Loop peptides | 136,494 | 136,494 | 100% |
-| **All three** | **5,960,196** | **7,490,976** | **79.6%** |
+| Source set | Molecules fingerprinted at the version 10 snapshot |
+|---|---:|
+| Screening collection | 4,609,488 |
+| ChEMBL | 1,214,214 |
+| Loop peptides | 136,494 |
+| **All three** | **5,960,196** |
 
-![Bar chart of each source set at the version 10 frozen snapshot against the expected total: screening collection 99.8%, ChEMBL 44.4%, loop peptides 100%](assets/corpus-progress.jpg)
-
-**The finished training set is expected to be 7,490,976 molecules**, and
-5,960,196 of them are fingerprinted. **The screening collection and the peptide set are now complete**, so ChEMBL is the only source with substantial work
-left and is where the training set will grow next. Every molecule is fingerprinted with
-the real 100-conformer calculation, which is what makes it slow to build.
-
-† **ChEMBL is the only projected figure.** The screening collection and the
-peptide set are enumerated sets whose totals are known, with only the
-fingerprinting left to do.
+Every molecule is fingerprinted with the real 100-conformer calculation,
+which is what makes it slow to build.
 
 ![Distribution of each molecule's highest two dimensional Tanimoto to any other molecule in the same source set, for the screening collection, ChEMBL and the loop peptides](assets/corpus-chemistry.jpg)
 
@@ -508,8 +500,7 @@ highest two dimensional Tanimoto to any other molecule in the same source set, s
 a distribution sitting high means that set is largely analog series. Medians are
 0.389 for the screening collection, 0.368 for ChEMBL and 0.864 for the loop
 peptides, on the same 6,000 molecule sample from each, because nearest neighbor
-similarity rises with sample size and unequal samples cannot be compared.* ChEMBL selection is still running, so its expected
-total is an estimate and will move.
+similarity rises with sample size and unequal samples cannot be compared.*
 
 version 10 trained on a 5,946,696-molecule snapshot, of which 5,887,229 were used
 for gradient updates and 59,467 reserved for early stopping:
@@ -577,7 +568,7 @@ attribution those sources ask for.
 
 ## Citation
 
-See [CITATION.cff](CITATION.cff). A preprint is in preparation; the method it
+See [CITATION.cff](CITATION.cff). The method it
 builds on is McGregor & Muskal, *J. Chem. Inf. Comput. Sci.*,
 [1999](https://www.eidogen.com/pdfs/pharmprintpaper1.pdf) and
 [2000](https://www.eidogen.com/pdfs/pharmprintpaper2.pdf).

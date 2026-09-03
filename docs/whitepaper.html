@@ -357,7 +357,7 @@ experimentally determined protein structures. The model has therefore only ever
 been shown chemistry that is synthetically real, and a degree of synthetic
 feasibility is built into its training distribution rather than imposed on it
 afterwards.</p>
-<p>An arbitrary two-dimensional structure that has never been synthesised is
+<p>An arbitrary two-dimensional structure that has never been synthesized is
 consequently outside the domain the model was fitted on. Such a molecule is not
 necessarily excluded, and the model will return an answer for it, but that
 answer is an extrapolation and should be treated as one. This also disposes of a
@@ -481,7 +481,7 @@ whole catalog costs, by route.</caption>
 <th class="n">The 4.65 million compound collection</th></tr></thead>
 <tbody>
 <tr><td>Conformer ensemble plus reference calculation</td>
-<td class="n">2.86 s</td><td class="n">3,694 core hours</td></tr>
+<td class="n">2.86 s</td><td class="n">3,697 core hours</td></tr>
 <tr><td><b>PharmCast from SMILES</b></td>
 <td class="n"><b>0.288 ms</b></td><td class="n"><b>29.3 minutes</b></td></tr>
 </tbody></table>
@@ -492,10 +492,10 @@ macOS 26.5.1 with PyTorch 2.9.1 on CPU. The GPU was not used, and both routes
 were timed on the same hardware, so the comparison is like for like. Per
 molecule cost depends on the batch regime as well as on the machine: 0.288 ms
 in a library scale batch against 0.357 ms for a molecule processed alone. The
-3,694 core hour figure is extrapolated from the per molecule rate, because the
+3,697 core hour figure is extrapolated from the per molecule rate, because the
 collection has been fingerprinted by that route only in multiday production
 runs; the 29.3 minute figure was measured end to end at 2,644 compounds per
-second on six worker processes, including catalog reading and featurisation.
+second on six worker processes, including catalog reading and featurization.
 A timing quoted without these conditions is not reproducible, which is why they
 are stated here rather than in a footnote.</p>
 
