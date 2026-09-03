@@ -17,7 +17,8 @@ import pytest
 
 from pharmcast import pharmtan
 from pharmcast.bits import N_INTS
-from pharmcast.screen import screen, write_tsv
+from pharmcast.cli import _progress_reporter
+from pharmcast.screen import count_records, screen, write_tsv
 
 
 def _fp(seed, density=0.05):
@@ -236,3 +237,71 @@ def test_a_record_of_the_wrong_width_is_rejected(tmp_path):
     bad.write_text("mol " + " ".join(["0"] * (N_INTS - 1)) + "\n")
     with pytest.raises(SystemExit):
         list(iter_fingerprints(bad, model=None))
+
+
+# ---------------------------------------------------------------------------
+# Progress reporting. A screen of a real collection runs for minutes, so the
+# CLI reports how far in it is. The reporting must not change the answer, must
+# never be the thing that fails a screen, and must not invent a denominator.
+# ---------------------------------------------------------------------------
+def _words(seed, n_on=40):
+    rng = np.random.default_rng(seed)
+    w = np.zeros(N_INTS, dtype=np.uint32)
+    for i in rng.choice(N_INTS, size=n_on, replace=False):
+        w[i] = rng.integers(1, 2 ** 31, dtype=np.uint32)
+    return w
+
+
+def test_progress_callback_reports_every_chunk_and_the_full_total():
+    """The hook fires per chunk and its last call accounts for every pair."""
+    queries = [("q%d" % i, _words(i), "") for i in range(3)]
+    targets = [("t%d" % i, _words(100 + i), "") for i in range(25)]
+    seen = []
+    out = screen(queries, iter(targets), top=5, chunk=10,
+                 progress=lambda compared, secs: seen.append(compared))
+    assert seen == [30, 60, 75]          # 10, 10 and 5 targets x 3 queries
+    assert seen[-1] == out["_compared"] == len(queries) * len(targets)
+
+
+def test_progress_does_not_change_the_ranking():
+    """Identical results with and without the callback."""
+    queries = [("q%d" % i, _words(i), "") for i in range(3)]
+    targets = [("t%d" % i, _words(100 + i), "") for i in range(25)]
+    a = screen(queries, iter(targets), top=5, chunk=10)
+    b = screen(queries, iter(targets), top=5, chunk=10, progress=lambda *_: None)
+    assert {k: v for k, v in a.items() if isinstance(k, int)} == \
+           {k: v for k, v in b.items() if isinstance(k, int)}
+
+
+def test_count_records_counts_smi_and_pfp_and_survives_a_missing_file(tmp_path):
+    """The denominator is measured, and its absence is None rather than a raise."""
+    smi = tmp_path / "t.smi"
+    smi.write_text("CCO\ta\n\n# a comment\nc1ccccc1\tb\n")
+    assert count_records(smi) == 2
+
+    pfp = tmp_path / "t.pfp"
+    pfp.write_text("# version 1\na\t%s\nb\t%s\n"
+                   % ("0 " * N_INTS, "0 " * N_INTS))
+    assert count_records(pfp) == 2
+
+    assert count_records(tmp_path / "does-not-exist.smi") is None
+
+
+def test_reporter_omits_the_percentage_when_the_total_is_unknown():
+    """No total means count and rate only. A guessed percentage is worse."""
+    known, unknown = io.StringIO(), io.StringIO()
+    _progress_reporter(2, 500, stream=known)(400, 2.0)
+    _progress_reporter(2, None, stream=unknown)(400, 2.0)
+    assert "200/500" in known.getvalue() and "40.0%" in known.getvalue()
+    assert "%" not in unknown.getvalue()
+    assert "200 targets" in unknown.getvalue()
+
+
+def test_reporter_writes_whole_lines_when_stderr_is_not_a_terminal():
+    """A redirected log must not be one line full of carriage returns."""
+    buf = io.StringIO()                  # a StringIO is not a tty
+    r = _progress_reporter(1, 100, stream=buf)
+    r(50, 1.0)
+    r(100, 2.0)
+    assert buf.getvalue().count("\n") == 2
+    assert "\r" not in buf.getvalue()

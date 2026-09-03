@@ -98,6 +98,33 @@ class Provenance(dict):
                    format(self["records"], ","), one("versions"), one("nconf")))
 
 
+def count_records(path):
+    """-> how many records `iter_fingerprints` will yield from `path`, or None.
+
+    A screen streams its targets and so never knows how many are coming, which
+    leaves a progress report with a count and a rate but no percentage and no
+    estimate. One cheap pass over the file buys both: a `.smi` is one record per
+    non-blank, non-comment line, and a `.pfp` is one per non-blank line that is
+    not a `#` header.
+
+    Returns None rather than raising if the file cannot be counted, because a
+    progress report is a convenience and must never be the thing that fails a
+    screen. The caller then reports count and rate without a percentage, which
+    is the honest fallback: a made-up denominator is worse than none.
+    """
+    p = os.fspath(path)
+    try:
+        n = 0
+        with _open(p) as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    n += 1
+        return n
+    except OSError:
+        return None
+
+
 def iter_fingerprints(path, model=None, batch=2000, provenance=None):
     """Stream (name, words, smiles) from a `.pfp`/`.pfp.gz` or a `.smi`.
 

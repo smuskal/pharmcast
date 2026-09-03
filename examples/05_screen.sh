@@ -63,4 +63,9 @@ cat <<'TXT'
   The last block used no --model. Screening is a comparison between
   fingerprints; where they came from is recorded in the output header and never
   inferred, so a reference library and a predicted one screen the same way.
+
+  These target sets are tiny and finish instantly. On a real collection the
+  screen reports its progress on stderr as it goes, once per 20,000 targets,
+  with a percentage and an estimate of the time remaining. Add --no-progress
+  to silence it, or --progress to force it on when stderr is redirected.
 TXT

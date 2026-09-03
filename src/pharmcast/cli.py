@@ -21,7 +21,7 @@ from . import bits as B
 from .io import read_pfp, read_pfp_records, read_smiles, write_pfp
 from .model import PharmCast
 from .similarity import pharmsim
-from .screen import (Provenance, iter_fingerprints, screen,
+from .screen import (Provenance, count_records, iter_fingerprints, screen,
                      warn_on_conformer_mismatch, write_tsv)
 
 
@@ -69,6 +69,55 @@ def cmd_sim(a):
     print("union      %d" % r["union"])
 
 
+def _progress_reporter(n_queries, n_targets, stream=sys.stderr):
+    """-> a callback for `screen(progress=...)`, or None if nothing should print.
+
+    A screen of a real collection runs for minutes with nothing on the terminal,
+    because the summary is only printed once the last chunk is scored. This is
+    what makes that visible, and it goes to stderr so a `--out`-less screen can
+    still be piped without the progress landing in the TSV.
+
+    On a terminal the line is rewritten in place with a carriage return. When
+    stderr is redirected there is no cursor to rewind, so each update is written
+    as its own line instead -- otherwise a log file ends up as one unreadable
+    line with embedded carriage returns.
+
+    `n_targets` may be None when the target count could not be established. The
+    percentage and the estimate are then omitted rather than guessed.
+    """
+    tty = stream.isatty()
+
+    def report(compared, secs):
+        done = compared // max(n_queries, 1)
+        rate = done / max(secs, 1e-9)
+        if n_targets:
+            eta = max(n_targets - done, 0) / max(rate, 1e-9)
+            msg = ("  %s/%s targets  %.1f%%  %s/s  eta %s"
+                   % (format(done, ","), format(n_targets, ","),
+                      100.0 * done / n_targets, format(int(rate), ","),
+                      _duration(eta)))
+        else:
+            msg = ("  %s targets  %s/s  %s elapsed"
+                   % (format(done, ","), format(int(rate), ","), _duration(secs)))
+        if tty:
+            stream.write("\r\033[K" + msg)
+        else:
+            stream.write(msg + "\n")
+        stream.flush()
+
+    return report
+
+
+def _duration(secs):
+    """Seconds as the shortest thing a person can read at a glance."""
+    secs = int(secs)
+    if secs < 60:
+        return "%ds" % secs
+    if secs < 3600:
+        return "%dm%02ds" % (secs // 60, secs % 60)
+    return "%dh%02dm" % (secs // 3600, (secs % 3600) // 60)
+
+
 def cmd_screen(a):
     """Nearest-neighbor screen: every query against every target.
 
@@ -113,8 +162,19 @@ def cmd_screen(a):
     if a.cutoff is not None and not 0.0 <= a.cutoff <= 1.0:
         raise SystemExit("--cutoff must be between 0.0 and 1.0")
 
+    # Counting the target file is one cheap pass and is what makes the
+    # percentage and the estimate real rather than invented. Only worth doing
+    # when something is going to read them.
+    show = a.progress if a.progress is not None else sys.stderr.isatty()
+    n_targets = None
+    if show:
+        n_targets = count_records(a.targets) if a.targets else len(queries)
+    progress = _progress_reporter(len(queries), n_targets) if show else None
+
     results = screen(queries, targets, top=top, cutoff=a.cutoff,
-                     exclude_self=exclude_self)
+                     exclude_self=exclude_self, progress=progress)
+    if progress is not None and sys.stderr.isatty():
+        sys.stderr.write("\r\033[K")          # let the summary have the line
 
     # Both sides have now streamed, so their declared conformer counts are
     # known and can be compared. Warned, never blocked.
@@ -246,6 +306,12 @@ def main(argv=None):
                    help="keep only hits scoring at or above this, as the "
                         "reference screening tools do")
     s.add_argument("--out", help="write TSV here instead of stdout")
+    s.add_argument("--progress", dest="progress", action="store_true",
+                   default=None,
+                   help="report progress to stderr (default: on when stderr "
+                        "is a terminal)")
+    s.add_argument("--no-progress", dest="progress", action="store_false",
+                   help="never report progress")
     # --model is deliberately NOT required here: two .pfp inputs need none.
     s.set_defaults(fn=cmd_screen)
 

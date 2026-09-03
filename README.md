@@ -266,7 +266,27 @@ A full queries-by-targets matrix is never materialized: `pharmtan_matrix`
 remains the right tool for a few thousand fingerprints, but at four million
 targets one query row alone is 32 MB.
 
-Throughput is reported to stderr on completion.
+### Progress on a long screen
+
+A screen of a large collection runs for minutes, so `screen` reports where it is
+while it works. Progress goes to stderr, once per 20,000-target chunk, and the
+final throughput line is printed on completion as before:
+
+```
+$ pharmcast --model pharmcast_scp_v10.pt screen \
+    --queries queries.smi --targets collection.smi --top 5 --out hits.tsv
+  1,240,000/4,653,831 targets  26.6%  4,943/s  eta 11m30s
+```
+
+On a terminal that line is rewritten in place. When stderr is redirected each
+update is written as its own line instead, so a log file stays readable. Use
+`--progress` to force it on when stderr is not a terminal, `--no-progress` to
+turn it off.
+
+The percentage and the estimate come from counting the target file first, which
+is one cheap pass. If the file cannot be counted, the report gives the count
+and the rate without a percentage rather than inventing a denominator.
+
 
 The coefficient is exactly the one `pharmtan` computes pairwise, same popcount
 over the same packed words, vectorized across a chunk. `tests/test_screen.py`
