@@ -595,5 +595,5 @@ builds on is McGregor & Muskal, *J. Chem. Inf. Comput. Sci.*,
 
 ---
 
-PharmCast™, PharmPrint™, PolyPharmPrint™, PharmSim™ and ChIP™ are trademarks of
+PharmPrint™, PolyPharmPrint™, PharmSim™ and ChIP™ are trademarks of
 [Eidogen-Sertanty, Inc.](https://eidogen-sertanty.com)
