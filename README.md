@@ -113,9 +113,11 @@ checksummed, from **<https://pharmcast.ai/models>**.
 | *(all releases, append-only)* | [`/models/SHA256SUMS`](https://pharmcast.ai/models/SHA256SUMS) | n/a |
 
 Superseded releases move to the **[archive](https://pharmcast.ai/models/#archive)**
-on the model page. They stay downloadable and their checksums stay in
-`SHA256SUMS`, so a result computed against one remains reproducible; they are
-not what new work should use.
+on the model page. Versions 7, 8 and 9 are there and stay downloadable, so a
+result computed against one remains reproducible; they are not what new work
+should use. `SHA256SUMS` is append-only and records the checksum of every
+release ever published, including ones no longer served, so a file you already
+hold can always be verified.
 
 ```bash
 curl -O https://pharmcast.ai/models/pharmcast_scp_v10.pt
