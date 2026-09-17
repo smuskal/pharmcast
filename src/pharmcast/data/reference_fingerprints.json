@@ -1,0 +1,37 @@
+{
+ "what": "PharmCast fingerprints for the SMILES in pharmcast/verify.py, recorded in the environment the published service runs",
+ "model_release": "pharmcast_scp_v10.pt",
+ "model_sha256": "b25ad356fb9b4bc2a05f6a7c06e87efc81a0832195ad73068d90448dd36284cf",
+ "smiles": [
+  "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+  "CC(=O)Oc1ccccc1C(=O)O",
+  "CC(C)Cc1ccc(cc1)C(C)C(=O)O",
+  "OC(=O)c1ccccc1O",
+  "C1CCC(CC1)N2CCN(CC2)c3ncccn3",
+  "N[C@@H](Cc1ccccc1)C(=O)N[C@@H](CC(=O)O)C(=O)O",
+  "[2H]C([2H])([2H])N(C)C(=O)c1ccccc1",
+  "[2H]C([2H])([2H])CO",
+  "[3H]CC(=O)Nc1ccccc1",
+  "CC(=O)Nc1cc(-c2cc(C(=O)N(C)c3ccccc3)nn2C(C)C)ccc1N1CCCCC1"
+ ],
+ "set_bits": [
+  11,
+  76,
+  77,
+  48,
+  112,
+  653,
+  29,
+  3,
+  39,
+  1046
+ ],
+ "sha256": "5690aeec51fc62939b111773626cad4e7861bae2ac135a85c0253271210fd172",
+ "reference_environment": {
+  "python": "3.12.8",
+  "rdkit": "2025.09.6",
+  "numpy": "2.2.6",
+  "torch": "2.9.1"
+ },
+ "how_to_verify": "pharmcast --model <checkpoint> verify"
+}

@@ -89,9 +89,27 @@ pip install git+https://github.com/smuskal/pharmcast.git
 pip install -e .
 ```
 
-Python ≥ 3.9 with `numpy`, `torch` and `rdkit`. **CPU only**: an
+Python ≥ 3.10 with `numpy`, `torch` and `rdkit ≥ 2025.9.6`. **CPU only**: an
 8-million-parameter network gains nothing from a GPU, so there is no CUDA build
 to match and no accelerator to configure.
+
+**The RDKit floor is load-bearing.** RDKit computes the network's whole input, so
+its version decides the fingerprint. Aromaticity perception for a ring bearing an
+exocyclic carbonyl changed between 2024.03 and 2025.09: on the same checkpoint
+caffeine moves from 15 set bits to 11, and one real comparison moved from 0.709
+to 0.535. 2025.9.6 is what the published service runs, and 2026.03.6 gives
+byte-identical fingerprints to it.
+
+**Prove your install** rather than assuming it:
+
+```bash
+pharmcast --model pharmcast_scp_v10.pt verify
+```
+
+It replays reference fingerprints recorded in the published environment,
+including the structures that moved between RDKit releases, and checks the
+checkpoint's own SHA-256. A match means your fingerprints are the published
+ones; a mismatch names the molecules that differ.
 
 Runs unmodified on **Apple Silicon, Intel macOS, Windows and Linux** (x86_64 and
 aarch64). The package is pure Python: no compiled extension, no architecture

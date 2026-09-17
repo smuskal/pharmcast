@@ -5,6 +5,7 @@
     pharmcast screen   --model M --queries q.smi --targets db.pfp --top 10
     pharmcast bits     --model M "SMILES"  [--width N]
     pharmcast card     --model M
+    pharmcast verify   --model M
     pharmcast pfp2bits FILE.pfp                 (no model needed)
 
 `pfp2bits` is also installed as its own command, so a `.pfp` written by
@@ -253,6 +254,12 @@ def cmd_card(a):
     print(json.dumps(_load(a).card(), indent=2, default=str))
 
 
+def cmd_verify(a):
+    """Prove this install reproduces the published fingerprints."""
+    from . import verify as V
+    return V.run(_load(a), model_path=a.model, write=a.write)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="pharmcast", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -317,6 +324,13 @@ def main(argv=None):
 
     s = sub.add_parser("card", help="what the checkpoint says about itself")
     s.set_defaults(fn=cmd_card)
+
+    s = sub.add_parser("verify",
+                       help="check this install reproduces the published fingerprints")
+    s.add_argument("--write", action="store_true",
+                   help="record this environment as the reference; only for a "
+                        "release built in the environment the service runs")
+    s.set_defaults(fn=cmd_verify)
 
     a = p.parse_args(argv)
     if getattr(a, "width", None) == 0:
