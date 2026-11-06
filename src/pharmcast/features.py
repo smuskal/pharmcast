@@ -59,18 +59,84 @@ FEATURE_SETS = {
 }
 
 
-def featurize(smiles_list, kind: str):
+def largest_fragment_smiles(smiles):
+    """Apply the same salt handling the training corpus builders used.
+
+    Returns a canonical SMILES string, never a mol, and that is deliberate. A
+    fragment taken with `sanitizeFrags=False` carries no ring information, so
+    handing it straight to a Morgan generator raises "RingInfo not
+    initialized". The round trip through `MolToSmiles` is what makes the
+    fragment usable; it is not a step to be optimised away.
+
+    Raises ValueError on a SMILES RDKit cannot parse, matching the trainer.
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise ValueError("unparseable SMILES")
+    if "." in smiles:
+        fragments = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
+        mol = max(fragments, key=lambda fragment: fragment.GetNumHeavyAtoms())
+    return Chem.MolToSmiles(mol)
+
+
+def fragment_note(smiles):
+    """-> None for a single fragment, else what largest-fragment keeps and drops.
+
+    Reporting only; the caller decides how to word it. Returns None for an
+    unparseable SMILES, because that is a different problem with its own
+    message, and None rather than raising if any fragment will not write back
+    out as SMILES: this feeds a public response, and a note nobody asked for
+    must never be the thing that fails a request.
+    """
+    if not smiles or "." not in smiles:
+        return None
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return None
+    try:
+        fragments = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
+        if len(fragments) < 2:
+            return None
+        kept = max(fragments, key=lambda fragment: fragment.GetNumHeavyAtoms())
+        return {"n_fragments": len(fragments),
+                "kept": Chem.MolToSmiles(kept),
+                "dropped": [Chem.MolToSmiles(f)
+                            for f in fragments if f is not kept]}
+    except Exception:                                          # noqa: BLE001
+        return None
+
+
+def featurize(smiles_list, kind: str, strip_salts: bool = True):
     """-> float32 array [n, dim].
 
     A SMILES RDKit cannot parse yields an all-zero row rather than an
     exception, so a batch is never lost to one bad record. Callers that care
     which molecules failed should check with `Chem.MolFromSmiles` themselves;
     `PharmCast.words_batch` reports them through `valid_mask`.
+
+    `strip_salts` reduces each input to its largest fragment first, which is
+    what training did: `chembl_scp_fingerprint.py` wrote the stripped SMILES
+    into the index column the trainer reads its SMILES from, so a counterion
+    left in place presents the network with a molecule it never saw.
+
+    A single-fragment input is left alone entirely, not merely unchanged: the
+    dot test below skips the reduction, because routing every molecule through
+    an extra parse and rewrite cost 24% of featurisation throughput for a
+    result measured to be bit-identical. Only a SMILES carrying a dot pays.
+
+    Leave it on unless the caller has its own desalting policy. CHIA keeps
+    metal-bearing fragments deliberately, because a largest-fragment rule
+    discards the metal, and it passes False for that reason.
     """
     spec = FEATURE_SETS[kind]
     n_bits, use_counts, desc_fn = spec["n_bits"], spec["counts"], spec["desc"]
     out = np.zeros((len(smiles_list), spec["dim"]), dtype=np.float32)
     for i, smi in enumerate(smiles_list):
+        if strip_salts and smi and "." in smi:
+            try:
+                smi = largest_fragment_smiles(smi)
+            except ValueError:
+                smi = None
         mol = Chem.MolFromSmiles(smi) if smi else None
         if mol is None:
             continue

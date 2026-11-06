@@ -19,6 +19,7 @@ import sys
 import time
 
 from . import bits as B
+from .features import fragment_note
 from .io import read_pfp, read_pfp_records, read_smiles, write_pfp
 from .model import PharmCast
 from .similarity import pharmsim
@@ -34,17 +35,76 @@ def _load(a):
     return PharmCast.load(a.model, threads=a.threads)
 
 
-def _words(pc, spec):
+def _parses(smi):
+    from rdkit import Chem, RDLogger
+    RDLogger.DisableLog("rdApp.*")
+    return Chem.MolFromSmiles(smi) is not None
+
+
+def _say_fragments(smi, label, stream=sys.stderr):
+    """Say so when only the largest fragment was scored.
+
+    Silently dropping a counterion is still dropping it, and a user comparing
+    a catalogue salt form against its parent should be told why the two agree.
+    """
+    note = fragment_note(smi)
+    if note is None:
+        return False
+    print("note: %s has %d fragments. Scoring the largest, %s, and setting "
+          "aside %s." % (label, note["n_fragments"], note["kept"],
+                         ", ".join(note["dropped"])), file=stream)
+    return True
+
+
+def _words(pc, spec, label="that SMILES"):
     """A SMILES on the command line, or name:index into a .pfp -- both give a
-    fingerprint, so `sim` can compare a prediction against a real record."""
+    fingerprint, so `sim` can compare a prediction against a real record.
+
+    A SMILES RDKit cannot read is refused here rather than featurised into an
+    all-zero row, which the network turns into a one-bit fingerprint the
+    caller has no way to recognise as meaningless.
+    """
     if spec.endswith(".pfp") or spec.endswith(".pfp.gz"):
         _, w = next(read_pfp(spec))
         return w
+    if not _parses(spec):
+        raise SystemExit("%s is not a SMILES RDKit can read: %s" % (label, spec))
+    _say_fragments(spec, label)
     return pc.words_batch([spec])[0]
 
 
 def cmd_fp(a):
     pairs = list(read_smiles(a.infile))
+    # A bulk conversion is not abandoned for one bad line, but nothing
+    # unreadable is written either: it is skipped, named and counted.
+    good, bad, mixed = [], 0, 0
+    for smi, nm in pairs:
+        if not _parses(smi):
+            bad += 1
+            if bad <= 10:
+                print("skipping %s: not a SMILES RDKit can read: %s"
+                      % (nm, smi), file=sys.stderr)
+            continue
+        note = fragment_note(smi)
+        if note is not None:
+            mixed += 1
+            # STORE THE SMILES THAT WAS ACTUALLY FINGERPRINTED. `write_pfp`
+            # derives the record's MW, heavy-atom and rotatable-bond columns
+            # from this string, so leaving the salt here would put a salt's
+            # weight beside a parent's fingerprint. This is the rule the
+            # corpus builder states for itself in chembl_scp_fingerprint.py:
+            # the index must not disagree with the fingerprint next to it.
+            smi = note["kept"]
+        good.append((smi, nm))
+    if bad:
+        print("%d of %d records skipped as unreadable"
+              % (bad, len(pairs)), file=sys.stderr)
+    if mixed:
+        print("%d of %d records carried more than one fragment; the largest "
+              "was fingerprinted" % (mixed, len(pairs)), file=sys.stderr)
+    if not good:
+        raise SystemExit("no readable SMILES in %s" % a.infile)
+    pairs = good
     t0 = time.time()
     words = pc_words = _load(a).words_batch([s for s, _ in pairs])
     dt = time.time() - t0
@@ -55,7 +115,8 @@ def cmd_fp(a):
 
 def cmd_sim(a):
     pc = _load(a)
-    x, y = _words(pc, a.a), _words(pc, a.b)
+    x, y = (_words(pc, a.a, "the first molecule"),
+            _words(pc, a.b, "the second molecule"))
     r = pharmsim(x, y)
     if a.json:
         r = {k: (v.tolist() if hasattr(v, "tolist") else v) for k, v in r.items()}

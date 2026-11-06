@@ -192,9 +192,9 @@ class PharmCast:
         return d
 
     # ------------------------------------------------------------- prediction
-    def _bits(self, smiles):
+    def _bits(self, smiles, strip_salts=True):
         """-> bool array [n, N_PHARM], pharmacophore j at column j."""
-        x = featurize(list(smiles), self.features)
+        x = featurize(list(smiles), self.features, strip_salts=strip_salts)
         x -= self.mean
         x /= self.std
         out = []
@@ -224,7 +224,7 @@ class PharmCast:
             "width %d nor the packed width %d"
             % (raw.shape[1], N_PHARM, N_BITS))
 
-    def words_batch(self, smiles):
+    def words_batch(self, smiles, strip_salts=True):
         """-> list of 330-integer lists, native representation.
 
         THIS IS THE API THAT MATTERS. The model earns its speed in a batch: a
@@ -238,7 +238,7 @@ class PharmCast:
         real record: unpack, repack, bytes identical.
         """
         smiles = list(smiles)
-        bits = self._bits(smiles)                      # [n, N_PHARM], pharmacophore j at column j
+        bits = self._bits(smiles, strip_salts)         # [n, N_PHARM], pharmacophore j at column j
         # Scatter back into the packed word layout. N_PHARM is not a multiple
         # of 32, so packing the pharmacophore-ordered array directly yields
         # 1,319 bytes, which is not divisible by 4 and cannot be viewed as
@@ -250,17 +250,21 @@ class PharmCast:
         words = packed.view("<u4")      # explicit LE; see bits.py on byte order
         return [[int(v) for v in row] for row in words]
 
-    def words(self, smi, *_ignored, **__ignored):
+    def words(self, smi, *_ignored, strip_salts=True, **__ignored):
         """One molecule, or None if it does not parse.
 
         Extra positional arguments are accepted and ignored so this drops in
         for a real-calculation call site without touching the caller:
         PharmCast always predicts the 100-conformer ensemble, so there is no
         conformer count to honor.
+
+        `strip_salts` is named explicitly rather than left to `**__ignored`,
+        which would swallow it and silently give the caller the opposite of
+        what it asked for.
         """
         try:
             if not valid_mask([smi])[0]:
                 return None
-            return self.words_batch([smi])[0]
+            return self.words_batch([smi], strip_salts=strip_salts)[0]
         except Exception:
             return None

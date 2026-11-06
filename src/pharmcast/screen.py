@@ -51,6 +51,7 @@ import time
 import numpy as np
 
 from .bits import N_INTS, N_PHARM
+from .features import fragment_note
 from .io import PFP_FIELDS, _open, read_smiles
 from .similarity import _popcount
 
@@ -201,12 +202,28 @@ def iter_fingerprints(path, model=None, batch=2000, provenance=None):
         block = list(itertools.islice(pairs, batch))
         if not block:
             return
+        # Same rule as the short-line refusal above, for the same reason: a
+        # screen that quietly fingerprints an unreadable SMILES into a one-bit
+        # answer is a ranking over a corpus you did not ask for.
+        from rdkit import Chem, RDLogger
+        RDLogger.DisableLog("rdApp.*")
+        for smiles, name in block:
+            if Chem.MolFromSmiles(smiles) is None:
+                raise SystemExit(
+                    "%s: record %r is not a SMILES RDKit can read: %s\n"
+                    "A screen must not silently skip or invent records."
+                    % (p, name, smiles))
         words = model.words_batch([s for s, _ in block])
         for (smiles, name), w in zip(block, words):
             if provenance is not None:
                 provenance["records"] += 1
                 provenance["nconf"].add(100)      # what the model predicts
-            yield name, w, smiles
+            # Report the molecule that was scored, not the one submitted: the
+            # model fingerprints the largest fragment, so a salt SMILES in
+            # this column would describe something other than the number
+            # beside it.
+            note = fragment_note(smiles)
+            yield name, w, (note["kept"] if note else smiles)
 
 
 def screen(queries, targets, top=10, cutoff=None, exclude_self=False,
