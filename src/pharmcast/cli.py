@@ -19,7 +19,7 @@ import sys
 import time
 
 from . import bits as B
-from .features import fragment_note
+from .features import fragment_note, prepare
 from .io import read_pfp, read_pfp_records, read_smiles, write_pfp
 from .model import PharmCast
 from .similarity import pharmsim
@@ -32,13 +32,21 @@ def _load(a):
     # that already holds fingerprints and has no use for a network.
     if not getattr(a, "model", None):
         raise SystemExit("this command needs --model, a path to a .pt checkpoint")
-    return PharmCast.load(a.model, threads=a.threads)
+    pc = PharmCast.load(a.model, threads=a.threads)
+    # Carried on the model so `_words` does not need the whole arg namespace.
+    pc._no_strip = bool(getattr(a, "no_strip_salts", False))
+    return pc
 
 
-def _parses(smi):
-    from rdkit import Chem, RDLogger
-    RDLogger.DisableLog("rdApp.*")
-    return Chem.MolFromSmiles(smi) is not None
+def _scored(smi, strip_salts=True):
+    """-> the SMILES that will actually be featurised, or None.
+
+    Validation has to test the molecule that gets featurised, not the one that
+    was typed: checking the submitted string and then featurising a stripped
+    one is how "this parses" turned into a silent all-zero row.
+    """
+    kept, _note = prepare(smi, strip_salts=strip_salts)
+    return kept
 
 
 def _say_fragments(smi, label, stream=sys.stderr):
@@ -67,10 +75,13 @@ def _words(pc, spec, label="that SMILES"):
     if spec.endswith(".pfp") or spec.endswith(".pfp.gz"):
         _, w = next(read_pfp(spec))
         return w
-    if not _parses(spec):
+    strip = not getattr(pc, "_no_strip", False)
+    kept = _scored(spec, strip_salts=strip)
+    if kept is None:
         raise SystemExit("%s is not a SMILES RDKit can read: %s" % (label, spec))
-    _say_fragments(spec, label)
-    return pc.words_batch([spec])[0]
+    if strip:
+        _say_fragments(spec, label)
+    return pc.words_batch([kept], strip_salts=strip)[0]
 
 
 def cmd_fp(a):
@@ -78,14 +89,16 @@ def cmd_fp(a):
     # A bulk conversion is not abandoned for one bad line, but nothing
     # unreadable is written either: it is skipped, named and counted.
     good, bad, mixed = [], 0, 0
+    strip = not getattr(a, "no_strip_salts", False)
     for smi, nm in pairs:
-        if not _parses(smi):
+        kept = _scored(smi, strip_salts=strip)
+        if kept is None:
             bad += 1
             if bad <= 10:
                 print("skipping %s: not a SMILES RDKit can read: %s"
                       % (nm, smi), file=sys.stderr)
             continue
-        note = fragment_note(smi)
+        note = fragment_note(smi) if strip else None
         if note is not None:
             mixed += 1
             # STORE THE SMILES THAT WAS ACTUALLY FINGERPRINTED. `write_pfp`
@@ -95,7 +108,7 @@ def cmd_fp(a):
             # corpus builder states for itself in chembl_scp_fingerprint.py:
             # the index must not disagree with the fingerprint next to it.
             smi = note["kept"]
-        good.append((smi, nm))
+        good.append((kept if strip else smi, nm))
     if bad:
         print("%d of %d records skipped as unreadable"
               % (bad, len(pairs)), file=sys.stderr)
@@ -106,7 +119,8 @@ def cmd_fp(a):
         raise SystemExit("no readable SMILES in %s" % a.infile)
     pairs = good
     t0 = time.time()
-    words = pc_words = _load(a).words_batch([s for s, _ in pairs])
+    words = pc_words = _load(a).words_batch([s for s, _ in pairs],
+                                            strip_salts=strip)
     dt = time.time() - t0
     n = write_pfp(a.out, [(nm, w, s) for (s, nm), w in zip(pairs, pc_words)])
     print("%d fingerprints -> %s  (%.3f s, %.1f mol/s)"
@@ -200,7 +214,9 @@ def cmd_screen(a):
     model = PharmCast.load(a.model, threads=a.threads) if wants_model else None
 
     q_prov = Provenance(a.queries)
-    queries = list(iter_fingerprints(a.queries, model, provenance=q_prov))
+    strip = not getattr(a, "no_strip_salts", False)
+    queries = list(iter_fingerprints(a.queries, model, provenance=q_prov,
+                                     strip_salts=strip))
     if not queries:
         raise SystemExit("no fingerprints in %s" % a.queries)
 
@@ -209,7 +225,8 @@ def cmd_screen(a):
     # re-reading and re-fingerprinting the file.
     if a.targets:
         t_prov = Provenance(a.targets)
-        targets = iter_fingerprints(a.targets, model, provenance=t_prov)
+        targets = iter_fingerprints(a.targets, model, provenance=t_prov,
+                                    strip_salts=strip)
         exclude_self = False
     else:
         t_prov = q_prov
@@ -327,6 +344,19 @@ def main(argv=None):
     p.add_argument("--model", help="path to a .pt checkpoint; required by "
                                    "every command except pfp2bits")
     p.add_argument("--threads", type=int, default=2)
+    # The escape hatch the Python API has had from the start. Largest-fragment
+    # selection matches training and is right for salts, but it keeps the
+    # largest piece by heavy-atom count, which discards the metal of a
+    # coordination compound: [Pt+2].[Cl-].[Cl-].N.N reduces to [Pt+2]. A
+    # command-line user screening such a file needs a way out, and until now
+    # only a library caller had one.
+    p.add_argument("--no-strip-salts", action="store_true",
+                   help="featurise the molecule as submitted instead of "
+                        "reducing it to its largest fragment. Training "
+                        "stripped salts, so this will disagree with the "
+                        "model's training distribution; use it for metal "
+                        "complexes and mixtures, where keeping the largest "
+                        "fragment is wrong.")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("fp", help="SMILES file -> native .pfp")

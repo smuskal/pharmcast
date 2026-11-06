@@ -51,7 +51,7 @@ import time
 import numpy as np
 
 from .bits import N_INTS, N_PHARM
-from .features import fragment_note
+from .features import prepare
 from .io import PFP_FIELDS, _open, read_smiles
 from .similarity import _popcount
 
@@ -126,7 +126,8 @@ def count_records(path):
         return None
 
 
-def iter_fingerprints(path, model=None, batch=2000, provenance=None):
+def iter_fingerprints(path, model=None, batch=2000, provenance=None,
+                      strip_salts=True):
     """Stream (name, words, smiles) from a `.pfp`/`.pfp.gz` or a `.smi`.
 
     A `.pfp` is read straight through and NEEDS NO MODEL, whatever produced it.
@@ -205,25 +206,27 @@ def iter_fingerprints(path, model=None, batch=2000, provenance=None):
         # Same rule as the short-line refusal above, for the same reason: a
         # screen that quietly fingerprints an unreadable SMILES into a one-bit
         # answer is a ranking over a corpus you did not ask for.
-        from rdkit import Chem, RDLogger
-        RDLogger.DisableLog("rdApp.*")
+        #
+        # `prepare` is the single predicate the feature path uses too, so what
+        # is validated here is exactly what gets featurised, and what is
+        # reported below is exactly what was scored. Doing it once also keeps
+        # this streaming loop to one extra parse per record rather than three.
+        scored = []
         for smiles, name in block:
-            if Chem.MolFromSmiles(smiles) is None:
+            kept, _note = prepare(smiles, strip_salts=strip_salts)
+            if kept is None:
                 raise SystemExit(
                     "%s: record %r is not a SMILES RDKit can read: %s\n"
                     "A screen must not silently skip or invent records."
                     % (p, name, smiles))
-        words = model.words_batch([s for s, _ in block])
-        for (smiles, name), w in zip(block, words):
+            scored.append(kept)
+        words = model.words_batch(scored, strip_salts=strip_salts)
+        for (kept, (smiles, name)), w in zip(zip(scored, block), words):
             if provenance is not None:
                 provenance["records"] += 1
                 provenance["nconf"].add(100)      # what the model predicts
-            # Report the molecule that was scored, not the one submitted: the
-            # model fingerprints the largest fragment, so a salt SMILES in
-            # this column would describe something other than the number
-            # beside it.
-            note = fragment_note(smiles)
-            yield name, w, (note["kept"] if note else smiles)
+            # Report the molecule that was scored, not the one submitted.
+            yield name, w, kept
 
 
 def screen(queries, targets, top=10, cutoff=None, exclude_self=False,

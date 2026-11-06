@@ -127,5 +127,14 @@ def read_smiles(path):
             parts = line.split()
             if not parts:
                 continue
+            # A COMMENT LINE IS NOT A RECORD. `count_records` has always said a
+            # .smi is "one record per non-blank, non-comment line" and skipped
+            # these, while this function did not, so the two disagreed about
+            # the same file. That was invisible while an unreadable SMILES
+            # became a quiet all-zero row; once a screen refuses one, a
+            # commented file aborts the whole run. The repo's own fixture in
+            # tests/test_screen.py writes such a file.
+            if parts[0].startswith("#"):
+                continue
             i += 1
             yield parts[0], (parts[1] if len(parts) > 1 else "PC%07d" % i)

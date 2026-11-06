@@ -103,7 +103,37 @@ def fragment_note(smiles):
                 "dropped": [Chem.MolToSmiles(f)
                             for f in fragments if f is not kept]}
     except Exception:                                          # noqa: BLE001
+        # Deliberately quiet about the molecule, which may be a visitor's, but
+        # not quiet about the fault: without this, a systematic break in the
+        # fragment path would make every multi-fragment input fall back to
+        # whole-molecule reporting with nothing anywhere to say so.
+        RDLogger.logger().message("pharmcast: fragment_note failed")
         return None
+
+
+def prepare(smiles, strip_salts=True):
+    """-> (smiles_that_will_be_featurised_or_None, note_or_None).
+
+    ONE PREDICATE, because two of them disagreed. The feature path decided to
+    strip on `"." in smiles` while the reporting path decided on what
+    `fragment_note` returned, so a record could be scored as its parent and
+    reported as the salt, or validated as readable and then featurised into an
+    all-zero row. Every caller that needs to know what was scored, or whether
+    it can be scored at all, asks this.
+
+    A None first element means there is nothing to featurise: unparseable
+    input, or a fragment that will not read back.
+    """
+    if not smiles:
+        return None, None
+    note = fragment_note(smiles) if strip_salts else None
+    candidate = note["kept"] if note else smiles
+    try:
+        if Chem.MolFromSmiles(candidate) is None:
+            return None, note
+    except Exception:                                          # noqa: BLE001
+        return None, note
+    return candidate, note
 
 
 def featurize(smiles_list, kind: str, strip_salts: bool = True):
@@ -133,10 +163,7 @@ def featurize(smiles_list, kind: str, strip_salts: bool = True):
     out = np.zeros((len(smiles_list), spec["dim"]), dtype=np.float32)
     for i, smi in enumerate(smiles_list):
         if strip_salts and smi and "." in smi:
-            try:
-                smi = largest_fragment_smiles(smi)
-            except ValueError:
-                smi = None
+            smi, _note = prepare(smi, strip_salts=True)
         mol = Chem.MolFromSmiles(smi) if smi else None
         if mol is None:
             continue
