@@ -15,6 +15,9 @@ RDLogger.DisableLog("rdApp.*")
 
 PROPRANOLOL = "CC(C)NCC(O)COc1cccc2ccccc12"
 PROPRANOLOL_HCL = "Cl.CC(C)NCC(O)COc1cccc2ccccc12"
+# Benzoic acid and phenethylamine: nine heavy atoms each, so the choice
+# between them is decided entirely by the tie-break.
+TIE_SMILES = "O=C(O)c1ccccc1.NCCc1ccccc1"
 ASPIRIN = "CC(=O)Oc1ccccc1C(=O)O"
 CAFFEINE = "Cn1c(=O)c2c(ncn2C)n(C)c1=O"
 
@@ -61,7 +64,7 @@ def test_prepare_and_featurize_agree_on_a_heavy_atom_tie():
     choosing from the submitted string and from the canonical one can differ.
     Benzoic acid and phenethylamine are nine heavy atoms each.
     """
-    tie = "O=C(O)c1ccccc1.NCCc1ccccc1"
+    tie = TIE_SMILES
     kept, note = prepare(tie)
     assert note is not None
     assert kept == note["kept"]
@@ -90,6 +93,52 @@ def test_nothing_degenerate_raises():
 def test_an_unparseable_input_stays_an_all_zero_row():
     assert not feats(["this_is_not_a_smiles"]).any()
     assert prepare("this_is_not_a_smiles")[0] is None
+
+
+def test_the_tie_does_not_depend_on_the_order_the_fragments_were_typed():
+    """`max` returns the FIRST maximum, so heavy atoms alone are not enough.
+
+    Measured before the fix: "CCO.CCN" kept CCO and "CCN.CCO" kept CCN, so two
+    spellings of one 1:1 co-former salt scored two different molecules. The
+    canonical SMILES is the tie-break, which makes the choice depend only on
+    the chemistry.
+    """
+    for a, b in (("CCO.CCN", "CCN.CCO"),
+                 ("O=C(O)c1ccccc1.NCCc1ccccc1", "NCCc1ccccc1.O=C(O)c1ccccc1")):
+        assert prepare(a)[0] == prepare(b)[0]
+        assert largest_fragment_smiles(a) == largest_fragment_smiles(b)
+        assert np.array_equal(feats([a]), feats([b]))
+
+
+def test_the_two_public_helpers_never_disagree():
+    """One predicate. Both go through the same `_largest`."""
+    for smi in ("Cl.CCO", "CCO.CCN", "CCN.CCO", "CS(=O)(=O)O.Cc1ccccc1N",
+                "[Na+].O=C([O-])C", PROPRANOLOL_HCL, TIE_SMILES):
+        assert largest_fragment_smiles(smi) == prepare(smi)[0]
+
+
+def test_the_fragment_note_handler_cannot_itself_raise(monkeypatch):
+    """The handler is the fall-back for a break in the fragment path.
+
+    It used to call `RDLogger.logger().message(...)`, which does not exist --
+    the logger carries debug/info/warning/error/critical -- so every time the
+    handler ran it raised AttributeError, escaped `fragment_note` and
+    `prepare`, and turned a documented fall-back into a 500 on a public
+    endpoint and a lost `featurize` batch. Exactly the failure it existed to
+    prevent.
+    """
+    from pharmcast import features as F
+
+    def boom(*a, **k):
+        raise RuntimeError("simulated systematic break")
+
+    monkeypatch.setattr(F.Chem, "GetMolFrags", boom)
+    assert fragment_note(PROPRANOLOL_HCL) is None
+    # prepare does not guard this call, so it must not need to.
+    assert prepare(PROPRANOLOL_HCL) == (PROPRANOLOL_HCL, None)
+    # And one bad record must not lose the batch.
+    row = feats([PROPRANOLOL_HCL])
+    assert row.shape[0] == 1
 
 
 def test_read_smiles_skips_comment_lines(tmp_path):

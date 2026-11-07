@@ -11,6 +11,8 @@ checkpoints name it and would otherwise fail to load.
 """
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 from rdkit import Chem, RDLogger
 from rdkit.Chem import AllChem, Descriptors
@@ -59,6 +61,23 @@ FEATURE_SETS = {
 }
 
 
+def _largest(fragments):
+    """The fragment the trainer would keep, chosen deterministically.
+
+    ONE IMPLEMENTATION, called by both public helpers below, so they cannot
+    drift apart about which fragment is "largest".
+
+    THE TIE-BREAK IS NOT DECORATION. `max` returns the FIRST maximum, so
+    heavy-atom count alone makes the answer depend on the order the fragments
+    were typed: measured, `"CCO.CCN"` kept `CCO` and `"CCN.CCO"` kept `CCN`.
+    Two spellings of one 1:1 co-former salt would score two different
+    molecules and return two different results. The canonical SMILES breaks
+    the tie, so the choice depends only on the chemistry.
+    """
+    return max(fragments,
+               key=lambda f: (f.GetNumHeavyAtoms(), Chem.MolToSmiles(f)))
+
+
 def largest_fragment_smiles(smiles):
     """Apply the same salt handling the training corpus builders used.
 
@@ -69,13 +88,15 @@ def largest_fragment_smiles(smiles):
     fragment usable; it is not a step to be optimised away.
 
     Raises ValueError on a SMILES RDKit cannot parse, matching the trainer.
+    `prepare` is what the services call; this is the trainer-shaped entry
+    point, kept because the published tests pin it and because it documents
+    the rule. Both go through `_largest`, so there is still one predicate.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise ValueError("unparseable SMILES")
     if "." in smiles:
-        fragments = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
-        mol = max(fragments, key=lambda fragment: fragment.GetNumHeavyAtoms())
+        mol = _largest(Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False))
     return Chem.MolToSmiles(mol)
 
 
@@ -97,17 +118,31 @@ def fragment_note(smiles):
         fragments = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
         if len(fragments) < 2:
             return None
-        kept = max(fragments, key=lambda fragment: fragment.GetNumHeavyAtoms())
+        kept = _largest(fragments)
         return {"n_fragments": len(fragments),
                 "kept": Chem.MolToSmiles(kept),
                 "dropped": [Chem.MolToSmiles(f)
                             for f in fragments if f is not kept]}
-    except Exception:                                          # noqa: BLE001
+    except Exception as exc:                                   # noqa: BLE001
+        # THIS HANDLER MUST NOT RAISE. It is the fall-back for a systematic
+        # break in the fragment path, and anything thrown here escapes
+        # `fragment_note` into `prepare`, which does not guard this call, and
+        # turns a documented fall-back into a 500 on a public endpoint and a
+        # lost `featurize` batch.
+        #
+        # stderr, not RDLogger. `RDLogger.logger()` has no `message()` -- it
+        # carries debug/info/warning/error/critical -- so the previous call
+        # raised AttributeError every time this handler ran, which is exactly
+        # the failure it existed to prevent. `DisableLog("rdApp.*")` above
+        # would have swallowed a real RDKit log line anyway.
+        #
         # Deliberately quiet about the molecule, which may be a visitor's, but
-        # not quiet about the fault: without this, a systematic break in the
-        # fragment path would make every multi-fragment input fall back to
-        # whole-molecule reporting with nothing anywhere to say so.
-        RDLogger.logger().message("pharmcast: fragment_note failed")
+        # not quiet about the fault.
+        try:
+            sys.stderr.write("pharmcast: fragment_note failed: %s\n"
+                             % str(exc)[:200])
+        except Exception:                                      # noqa: BLE001
+            pass
         return None
 
 
